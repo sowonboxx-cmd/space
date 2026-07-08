@@ -82,12 +82,6 @@
   .tab[data-p="faible"].active{background:var(--faible); color:#fff;}
   .tab[data-p="toutes"].active{background:var(--ink); color:#fff;}
   .tab[data-p="aucune"].active{background:#9aa0ab; color:#fff;}
-  .cat-filter-group{display:flex; flex-direction:column; gap:3px;}
-  .quick-add-tag{
-    background:none; border:none; color:var(--text-dim); font-size:11px; padding:0 2px;
-    text-align:left; text-decoration:underline; cursor:pointer; font-weight:600;
-  }
-  .quick-add-tag:hover{color:var(--text);}
   select, input[type=text], input[type=search], textarea, input[type=password]{
     font-family:var(--font-body); font-size:13.5px; padding:7px 10px;
     border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text);
@@ -253,6 +247,9 @@
     #addBtn .label-full{display:none;}
     #addBtn .label-short{display:inline;}
     .filters{padding:10px 12px; position:static;}
+    .tabs{flex:1 1 100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+    #searchInput{flex:1; min-width:0;}
+    .filters .spacer{flex:0; min-width:0;}
     main{padding:12px;}
     .grid{grid-template-columns:1fr;}
     input, select, textarea{font-size:16px;}
@@ -297,11 +294,8 @@
       <div class="tab" data-p="faible">Faible</div>
       <div class="tab" data-p="aucune">Aucune</div>
     </div>
-    <div class="cat-filter-group">
-      <div class="select-wrap">
-        <select id="categoryFilter"><option value="">Catégories</option></select>
-      </div>
-      <button class="quick-add-tag" id="quickAddTagBtn" type="button">+ tag</button>
+    <div class="select-wrap">
+      <select id="categoryFilter"><option value="">Catégories</option></select>
     </div>
     <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
     <input type="search" id="searchInput" placeholder="Rechercher...">
@@ -347,10 +341,6 @@
         <input type="text" id="categoryInput" list="categoryList" placeholder="Ajouter une catégorie, Entrée pour valider">
         <datalist id="categoryList"></datalist>
       </div>
-    </div>
-    <div class="field" id="linkAccountField" style="display:none;">
-      <label>Compte (Instagram/Threads ne le détectent pas automatiquement)</label>
-      <input type="text" id="linkAccount" placeholder="ex: japanese_lyrics">
     </div>
     <div class="field">
       <label>Priorité</label>
@@ -610,7 +600,7 @@ function normalizeInstagramUrl(url){
   } catch(e){ return url; }
 }
 
-const WORKER_PLATFORMS = ['twitter', 'tiktok', 'instagram', 'threads'];
+const WORKER_PLATFORMS = ['twitter', 'tiktok', 'threads'];
 
 function nativeFallbackEmbedHTML(link){
   const {platform, url} = link;
@@ -629,6 +619,12 @@ function nativeFallbackEmbedHTML(link){
 
 function buildEmbedHTML(link){
   const {platform} = link;
+  if(platform === 'instagram'){
+    // Always the native, playable embed — the static-image Worker preview
+    // doesn't let you watch the video inline, which matters more than
+    // dodging the occasional ad-blocker prompt.
+    return nativeFallbackEmbedHTML(link);
+  }
   if(WORKER_PLATFORMS.includes(platform)){
     const s = getSettings();
     if(!s.workerUrl) return nativeFallbackEmbedHTML(link);
@@ -737,9 +733,19 @@ function ensureEmbedScript(platform){
 
 function reprocessEmbeds(items){
   const settings = getSettings();
-  // Native embed scripts are only needed as a fallback for platforms/links
-  // the Worker doesn't (yet) cover — i.e. no workerUrl configured at all,
-  // or the Worker returned an error for this specific link.
+  const platformsPresent = new Set(items.map(l=>l.platform));
+
+  if(platformsPresent.has('instagram')){
+    ensureEmbedScript('instagram');
+    // Instagram's embed.js does NOT watch the DOM for new content — it must
+    // be told to re-scan explicitly, or blockquotes added after a filter/tab
+    // switch never turn into the actual embed.
+    if(window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+  }
+
+  // Native embed scripts are only needed as a fallback for the Worker
+  // platforms — i.e. no workerUrl configured at all, or the Worker
+  // returned an error for this specific link.
   const needsNative = (platform) => {
     if(!WORKER_PLATFORMS.includes(platform)) return false;
     if(!settings.workerUrl) return true;
@@ -748,15 +754,7 @@ function reprocessEmbeds(items){
       return cached && typeof cached.then !== 'function' && cached.status === 'error';
     })());
   };
-  const platformsPresent = new Set(items.map(l=>l.platform));
 
-  if(platformsPresent.has('instagram') && needsNative('instagram')){
-    ensureEmbedScript('instagram');
-    // Instagram's embed.js does NOT watch the DOM for new content — it must
-    // be told to re-scan explicitly, or blockquotes added after a filter/tab
-    // switch never turn into the actual embed.
-    if(window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
-  }
   if(platformsPresent.has('threads') && needsNative('threads')){
     // No documented reprocess API for Threads' embed script — reinserting
     // the tag is the only known way to get it to scan again.
@@ -778,20 +776,8 @@ function reprocessEmbeds(items){
 }
 
 /* ---------- Rendering ---------- */
-function getExtraCategories(){
-  try{ return JSON.parse(localStorage.getItem('vault_extra_categories') || '[]'); }
-  catch(e){ return []; }
-}
-function addExtraCategory(name){
-  const extra = getExtraCategories();
-  if(!extra.some(c=>c.toLowerCase() === name.toLowerCase())){
-    extra.push(name);
-    localStorage.setItem('vault_extra_categories', JSON.stringify(extra));
-  }
-}
-
 function allCategories(){
-  const set = new Set(getExtraCategories());
+  const set = new Set();
   STATE.links.forEach(l => (l.categories||[]).forEach(c => set.add(c)));
   return Array.from(set).sort((a,b)=>a.localeCompare(b));
 }
@@ -817,14 +803,6 @@ function refreshCategoryOptions(){
 
   $('#renameCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
 }
-
-$('#quickAddTagBtn').onclick = ()=>{
-  const name = (prompt('Nom de la nouvelle catégorie :') || '').trim();
-  if(!name) return;
-  addExtraCategory(name);
-  render();
-  toast('Catégorie « ' + name + ' » ajoutée');
-};
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1093,17 +1071,11 @@ $('#categoryChips').addEventListener('click', (e)=>{
   renderCategoryChips();
 });
 
-function updateAccountFieldVisibility(platform){
-  $('#linkAccountField').style.display = (platform === 'instagram' || platform === 'threads') ? 'block' : 'none';
-}
-
 function resetLinkModal(){
   $('#linkUrl').value = '';
   STATE.modalCategories = [];
   $('#categoryInput').value = '';
   renderCategoryChips();
-  $('#linkAccount').value = '';
-  updateAccountFieldVisibility('');
   $('#linkNote').value = '';
   $('#detectedPlat').textContent = '';
   setPriorityPick('moyenne');
@@ -1122,10 +1094,9 @@ $('#cancelLinkBtn').onclick = ()=> $('#linkOverlay').classList.remove('show');
 
 $('#linkUrl').addEventListener('input', ()=>{
   const url = $('#linkUrl').value.trim();
-  if(!url){ $('#detectedPlat').textContent=''; updateAccountFieldVisibility(''); return; }
+  if(!url){ $('#detectedPlat').textContent=''; return; }
   const p = detectPlatform(url);
   $('#detectedPlat').textContent = 'Détecté : ' + platformLabel(p);
-  updateAccountFieldVisibility(p);
 });
 
 $('#priorityPicker').addEventListener('click', (e)=>{
@@ -1142,8 +1113,6 @@ function openEditModal(id){
   $('#linkUrl').value = link.url;
   STATE.modalCategories = (link.categories||[]).slice();
   renderCategoryChips();
-  $('#linkAccount').value = link.account || '';
-  updateAccountFieldVisibility(link.platform);
   $('#linkNote').value = link.note || '';
   setPriorityPick(link.priority);
   $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
@@ -1159,10 +1128,8 @@ $('#saveLinkBtn').onclick = ()=>{
   addCategoriesFromInput(); // catch anything typed but not yet committed as a chip
   const categories = STATE.modalCategories.slice();
   const platform = detectPlatform(url);
-  const manualAccount = $('#linkAccount').value.trim();
   const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
   const note = $('#linkNote').value.trim();
-  const isManualAccountPlatform = (platform === 'instagram' || platform === 'threads');
 
   if(STATE.editingId){
     const link = STATE.links.find(l=>l.id===STATE.editingId);
@@ -1171,14 +1138,13 @@ $('#saveLinkBtn').onclick = ()=>{
     link.categories = categories;
     link.priority = priority;
     link.note = note;
-    if(isManualAccountPlatform) link.account = manualAccount;
   } else {
     STATE.links.push({
       id: uid(),
       url,
       platform,
       categories,
-      account: isManualAccountPlatform ? manualAccount : '',
+      account: '',
       priority,
       note,
       addedAt: new Date().toISOString()

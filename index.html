@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Inspiration Hub</title>
+<style>
+  :root{
+    --ink:#0f1424;
+    --ink-soft:#1c2438;
+    --paper:#f6f5f1;
+    --paper-raised:#ffffff;
+    --line:#e4e1d8;
+    --gold:#c9a24b;
+    --haute:#d9534f;
+    --moyenne:#d9a441;
+    --faible:#4f9d69;
+    --text:#1c2130;
+    --text-dim:#6b7180;
+    --radius:10px;
+    --font-display: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+  }
+  header.top{
+    position:sticky; top:0; z-index:40;
+    background:var(--ink); color:#f1efe8;
+    padding:14px 20px;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    border-bottom:3px solid var(--gold);
+  }
+  header.top h1{
+    font-family:var(--font-display);
+    font-size:20px; font-weight:600; margin:0; letter-spacing:.3px;
+    display:flex; align-items:center; gap:8px;
+  }
+  header.top h1 .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;}
+  .top-actions{margin-left:auto; display:flex; gap:8px; align-items:center;}
+  button{
+    font-family:var(--font-body); cursor:pointer; border:none; border-radius:8px;
+    padding:8px 14px; font-size:13.5px; font-weight:600;
+  }
+  .btn-primary{background:var(--gold); color:#241a05;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:transparent; color:#f1efe8; border:1px solid rgba(255,255,255,.25);}
+  .btn-ghost:hover{background:rgba(255,255,255,.08);}
+  .btn-icon{background:transparent; padding:6px 8px; color:inherit;}
+  .btn-icon:hover{background:rgba(0,0,0,.06); border-radius:6px;}
+  .view-toggle{display:flex; border:1px solid rgba(255,255,255,.25); border-radius:8px; overflow:hidden;}
+  .view-toggle button{border-radius:0; background:transparent; color:#f1efe8; padding:7px 12px;}
+  .view-toggle button.active{background:var(--gold); color:#241a05;}
+
+  .filters{
+    background:var(--paper-raised); border-bottom:1px solid var(--line);
+    padding:10px 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    position:sticky; top:57px; z-index:39;
+  }
+  .tabs{display:flex; gap:6px;}
+  .tab{
+    padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600;
+    background:#eeeae0; color:var(--text-dim); border:1px solid transparent;
+  }
+  .tab[data-p="haute"].active{background:var(--haute); color:#fff;}
+  .tab[data-p="moyenne"].active{background:var(--moyenne); color:#2b1e00;}
+  .tab[data-p="faible"].active{background:var(--faible); color:#fff;}
+  .tab[data-p="toutes"].active{background:var(--ink); color:#fff;}
+  select, input[type=text], input[type=search], textarea, input[type=password]{
+    font-family:var(--font-body); font-size:13.5px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text);
+  }
+  .filters .spacer{flex:1;}
+  .count-pill{font-size:12px; color:var(--text-dim); font-family:var(--font-mono);}
+
+  main{padding:20px; max-width:1400px; margin:0 auto;}
+
+  /* GRID VIEW */
+  .grid{
+    display:grid; gap:18px;
+    grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+  }
+  .card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .card .embed-wrap{
+    min-height:120px; background:#f0eee7; display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .card .embed-wrap iframe, .card .embed-wrap blockquote{width:100%;}
+  .card .other-preview{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; padding:30px 16px; text-align:center;
+  }
+  .card .other-preview img{width:36px; height:36px; border-radius:8px;}
+  .card .other-preview a{color:var(--ink); font-weight:600; text-decoration:none; font-size:13.5px; word-break:break-all;}
+  .card-meta{padding:10px 12px; border-top:1px solid var(--line);}
+  .chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px;}
+  .chip{
+    font-size:11px; padding:2px 8px; border-radius:20px; background:#eeeae0; color:var(--text-dim);
+    font-weight:600;
+  }
+  .chip.priority{color:#fff;}
+  .chip.priority.haute{background:var(--haute);}
+  .chip.priority.moyenne{background:var(--moyenne); color:#2b1e00;}
+  .chip.priority.faible{background:var(--faible);}
+  .card-note{font-size:12.5px; color:var(--text-dim); margin:4px 0 8px; line-height:1.4;}
+  .card-actions{display:flex; gap:4px; justify-content:flex-end;}
+  .card-actions button{font-size:12px; padding:5px 8px;}
+
+  /* LIST VIEW */
+  table{width:100%; border-collapse:collapse; background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  thead th{
+    text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.5px;
+    color:var(--text-dim); padding:10px 12px; border-bottom:1px solid var(--line); background:#f0eee7;
+  }
+  tbody td{padding:10px 12px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle;}
+  tbody tr:hover{background:#faf9f5;}
+  .plat-badge{display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12.5px;}
+  .plat-dot{width:8px; height:8px; border-radius:50%;}
+  .plat-instagram{background:linear-gradient(45deg,#f58529,#dd2a7b,#8134af);}
+  .plat-twitter{background:#000;}
+  .plat-tiktok{background:#000;}
+  .plat-threads{background:#000;}
+  .plat-other{background:#888;}
+  .url-cell{max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .url-cell a{color:var(--text); text-decoration:none;}
+  .url-cell a:hover{text-decoration:underline;}
+  .row-actions{display:flex; gap:2px;}
+
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--text-dim);
+  }
+  .empty-state h2{font-family:var(--font-display); color:var(--ink); font-size:22px; margin-bottom:6px;}
+
+  /* MODAL */
+  .overlay{
+    position:fixed; inset:0; background:rgba(15,20,36,.5); display:none;
+    align-items:flex-start; justify-content:center; z-index:100; padding:40px 16px; overflow-y:auto;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--paper-raised); border-radius:14px; width:100%; max-width:480px;
+    padding:24px; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal h3{font-family:var(--font-display); margin:0 0 16px; font-size:19px; color:var(--ink);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-dim); margin-bottom:5px;}
+  .field input, .field textarea, .field select{width:100%;}
+  .field textarea{resize:vertical; min-height:60px;}
+  .priority-picker{display:flex; gap:8px;}
+  .priority-picker button{
+    flex:1; background:#eeeae0; color:var(--text-dim); border-radius:8px; padding:8px;
+  }
+  .priority-picker button[data-p="haute"].sel{background:var(--haute); color:#fff;}
+  .priority-picker button[data-p="moyenne"].sel{background:var(--moyenne); color:#2b1e00;}
+  .priority-picker button[data-p="faible"].sel{background:var(--faible); color:#fff;}
+  .detected-plat{font-size:12px; color:var(--text-dim); margin-top:5px; font-family:var(--font-mono);}
+  .modal-actions{display:flex; justify-content:space-between; gap:8px; margin-top:20px;}
+  .modal-actions .right{display:flex; gap:8px;}
+  .btn-danger{background:#fbeae9; color:var(--haute);}
+  .btn-secondary{background:#eeeae0; color:var(--text);}
+
+  .sync-note{font-size:11px; color:rgba(255,255,255,.6); font-family:var(--font-mono);}
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#f1efe8; padding:10px 18px; border-radius:8px; font-size:13px;
+    z-index:200; box-shadow:0 8px 24px rgba(0,0,0,.25); display:none;
+  }
+  .toast.show{display:block;}
+  @media (max-width:640px){
+    header.top{padding:12px;}
+    .filters{padding:10px 12px; position:static;}
+    main{padding:12px;}
+    .grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1><span class="dot"></span>Vault</h1>
+  <div class="top-actions">
+    <div class="view-toggle">
+      <button id="viewGridBtn" class="active">Grille</button>
+      <button id="viewListBtn">Liste</button>
+    </div>
+    <button class="btn-ghost" id="refreshBtn" title="Recharger depuis GitHub">↻ Sync</button>
+    <button class="btn-ghost" id="settingsBtn">⚙ Réglages</button>
+    <button class="btn-primary" id="addBtn">+ Ajouter un lien</button>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="tabs" id="priorityTabs">
+    <div class="tab active" data-p="toutes">Toutes</div>
+    <div class="tab" data-p="haute">Haute</div>
+    <div class="tab" data-p="moyenne">Moyenne</div>
+    <div class="tab" data-p="faible">Faible</div>
+  </div>
+  <select id="categoryFilter"><option value="">Toutes catégories</option></select>
+  <select id="platformFilter">
+    <option value="">Toutes plateformes</option>
+    <option value="instagram">Instagram</option>
+    <option value="twitter">X / Twitter</option>
+    <option value="tiktok">TikTok</option>
+    <option value="threads">Threads</option>
+    <option value="other">Autre</option>
+  </select>
+  <input type="search" id="searchInput" placeholder="Rechercher...">
+  <div class="spacer"></div>
+  <span class="count-pill" id="countPill"></span>
+</div>
+
+<main>
+  <div id="gridView" class="grid"></div>
+  <table id="listView" style="display:none;">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Lien</th>
+        <th>Catégories</th>
+        <th>Priorité</th>
+        <th>Ajouté</th>
+        <th>Note</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="listBody"></tbody>
+  </table>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <h2>Le vault est vide</h2>
+    <p>Colle ton premier lien Instagram, X, TikTok ou Threads pour commencer.</p>
+  </div>
+</main>
+
+<!-- Add/Edit modal -->
+<div class="overlay" id="linkOverlay">
+  <div class="modal">
+    <h3 id="linkModalTitle">Ajouter un lien</h3>
+    <div class="field">
+      <label>URL</label>
+      <input type="text" id="linkUrl" placeholder="https://www.instagram.com/reel/...">
+      <div class="detected-plat" id="detectedPlat"></div>
+    </div>
+    <div class="field">
+      <label>Catégories (séparées par une virgule)</label>
+      <input type="text" id="linkCategories" list="categoryList" placeholder="food, business, perso...">
+      <datalist id="categoryList"></datalist>
+    </div>
+    <div class="field">
+      <label>Priorité</label>
+      <div class="priority-picker" id="priorityPicker">
+        <button type="button" data-p="haute">Haute</button>
+        <button type="button" data-p="moyenne" class="sel">Moyenne</button>
+        <button type="button" data-p="faible">Faible</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Note (optionnel)</label>
+      <textarea id="linkNote" placeholder="Pourquoi tu l'as gardé, idée à réutiliser..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" id="deleteLinkBtn" style="display:none;">Supprimer</button>
+      <div class="right">
+        <button class="btn-secondary" id="cancelLinkBtn">Annuler</button>
+        <button class="btn-primary" id="saveLinkBtn">Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h3>Réglages GitHub</h3>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-top:-8px;">
+      Les liens sont stockés dans un fichier JSON de ton repo, pour que tu retrouves
+      la même liste sur tous tes appareils.
+    </p>
+    <div class="field">
+      <label>Token GitHub (Personal Access Token)</label>
+      <input type="password" id="ghToken" placeholder="ghp_...">
+    </div>
+    <div class="field">
+      <label>Propriétaire / Repo</label>
+      <input type="text" id="ghRepo" placeholder="ton-user/inspiration-vault">
+    </div>
+    <div class="field">
+      <label>Chemin du fichier</label>
+      <input type="text" id="ghPath" placeholder="data/links.json">
+    </div>
+    <div class="field">
+      <label>Branche</label>
+      <input type="text" id="ghBranch" placeholder="main">
+    </div>
+    <div class="sync-note" id="syncStatus" style="color:var(--text-dim);"></div>
+    <div class="modal-actions">
+      <div class="right" style="margin-left:auto;">
+        <button class="btn-secondary" id="closeSettingsBtn">Fermer</button>
+        <button class="btn-primary" id="saveSettingsBtn">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+
+const EMBED_SRC = {
+  instagram: 'https://www.instagram.com/embed.js',
+  twitter: 'https://platform.twitter.com/widgets.js',
+  tiktok: 'https://www.tiktok.com/embed.js',
+  threads: 'https://www.threads.net/embed.js'
+};
+
+let STATE = {
+  links: [],
+  sha: null,
+  view: 'grid',
+  priorityFilter: 'toutes',
+  categoryFilter: '',
+  platformFilter: '',
+  search: '',
+  editingId: null
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function uid(){ return 'l_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+
+/* ---------- Settings (localStorage) ---------- */
+function getSettings(){
+  try { return JSON.parse(localStorage.getItem('vault_gh_settings') || '{}'); }
+  catch(e){ return {}; }
+}
+function setSettings(s){ localStorage.setItem('vault_gh_settings', JSON.stringify(s)); }
+
+function openSettings(){
+  const s = getSettings();
+  $('#ghToken').value = s.token || '';
+  $('#ghRepo').value = s.repo || '';
+  $('#ghPath').value = s.path || 'data/links.json';
+  $('#ghBranch').value = s.branch || 'main';
+  $('#syncStatus').textContent = s.repo ? ('Dernière sync : ' + (s.lastSync ? new Date(s.lastSync).toLocaleString('fr-FR') : 'jamais')) : 'Pas encore configuré.';
+  $('#settingsOverlay').classList.add('show');
+}
+function closeSettings(){ $('#settingsOverlay').classList.remove('show'); }
+
+$('#settingsBtn').onclick = openSettings;
+$('#closeSettingsBtn').onclick = closeSettings;
+$('#saveSettingsBtn').onclick = function(){
+  const s = getSettings();
+  s.token = $('#ghToken').value.trim();
+  s.repo = $('#ghRepo').value.trim();
+  s.path = $('#ghPath').value.trim() || 'data/links.json';
+  s.branch = $('#ghBranch').value.trim() || 'main';
+  setSettings(s);
+  closeSettings();
+  toast('Réglages enregistrés');
+  loadFromGitHub();
+};
+
+/* ---------- GitHub sync ---------- */
+function ghApiUrl(){
+  const s = getSettings();
+  if(!s.repo) return null;
+  return `https://api.github.com/repos/${s.repo}/contents/${s.path}`;
+}
+
+async function loadFromGitHub(){
+  const s = getSettings();
+  const url = ghApiUrl();
+  if(!url){
+    // no repo configured yet -> fall back to local cache only
+    loadLocalCache();
+    render();
+    return;
+  }
+  try{
+    const headers = {'Accept':'application/vnd.github+json'};
+    if(s.token) headers['Authorization'] = 'Bearer ' + s.token;
+    const res = await fetch(url + (s.branch ? `?ref=${s.branch}` : ''), {headers});
+    if(res.status === 404){
+      STATE.links = [];
+      STATE.sha = null;
+      render();
+      return;
+    }
+    if(!res.ok) throw new Error('GitHub ' + res.status);
+    const data = await res.json();
+    STATE.sha = data.sha;
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+    const parsed = JSON.parse(decoded);
+    STATE.links = parsed.links || [];
+    saveLocalCache();
+    s.lastSync = Date.now();
+    setSettings(s);
+    render();
+  } catch(err){
+    console.error(err);
+    toast('Sync impossible, affichage de la copie locale');
+    loadLocalCache();
+    render();
+  }
+}
+
+async function saveToGitHub(){
+  const s = getSettings();
+  const url = ghApiUrl();
+  saveLocalCache();
+  if(!url || !s.token){
+    toast('Enregistré localement (configure GitHub dans Réglages pour synchroniser)');
+    return;
+  }
+  try{
+    const body = {
+      message: 'Update links.json via Vault',
+      content: btoa(unescape(encodeURIComponent(JSON.stringify({links: STATE.links}, null, 2)))),
+      branch: s.branch || 'main'
+    };
+    if(STATE.sha) body.sha = STATE.sha;
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Accept':'application/vnd.github+json',
+        'Authorization': 'Bearer ' + s.token,
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){
+      const errBody = await res.json().catch(()=>({}));
+      throw new Error(errBody.message || ('GitHub ' + res.status));
+    }
+    const data = await res.json();
+    STATE.sha = data.content.sha;
+    s.lastSync = Date.now();
+    setSettings(s);
+    toast('Synchronisé avec GitHub');
+  } catch(err){
+    console.error(err);
+    toast('Échec de sync GitHub : ' + err.message);
+  }
+}
+
+function saveLocalCache(){
+  localStorage.setItem('vault_links_cache', JSON.stringify(STATE.links));
+}
+function loadLocalCache(){
+  try{ STATE.links = JSON.parse(localStorage.getItem('vault_links_cache') || '[]'); }
+  catch(e){ STATE.links = []; }
+}
+
+$('#refreshBtn').onclick = () => loadFromGitHub();
+
+/* ---------- Platform detection & embeds ---------- */
+function detectPlatform(url){
+  try{
+    const h = new URL(url).hostname.replace('www.','');
+    if(h.includes('instagram.com')) return 'instagram';
+    if(h.includes('x.com') || h.includes('twitter.com')) return 'twitter';
+    if(h.includes('tiktok.com')) return 'tiktok';
+    if(h.includes('threads.net') || h.includes('threads.com')) return 'threads';
+    return 'other';
+  } catch(e){ return 'other'; }
+}
+
+function platformLabel(p){
+  return {instagram:'Instagram', twitter:'X / Twitter', tiktok:'TikTok', threads:'Threads', other:'Autre'}[p] || 'Autre';
+}
+
+function buildEmbedHTML(link){
+  const {platform, url} = link;
+  if(platform === 'instagram'){
+    return `<blockquote class="instagram-media" data-instgrm-permalink="${url}" style="margin:0;width:100%;min-height:300px;"><a href="${url}">${url}</a></blockquote>`;
+  }
+  if(platform === 'twitter'){
+    return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;
+  }
+  if(platform === 'tiktok'){
+    return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
+  }
+  if(platform === 'threads'){
+    return `<blockquote class="text-post-media" data-text-post-permalink="${url}" style="max-width:100%;"><a href="${url}">${url}</a></blockquote>`;
+  }
+  let domain = '';
+  try{ domain = new URL(url).hostname.replace('www.',''); }catch(e){ domain = url; }
+  return `<div class="other-preview">
+    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
+    <a href="${url}" target="_blank" rel="noopener">${domain}</a>
+  </div>`;
+}
+
+function reprocessEmbeds(){
+  Object.entries(EMBED_SRC).forEach(([platform, src])=>{
+    const old = document.querySelector(`script[data-embed-src="${src}"]`);
+    if(old) old.remove();
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.dataset.embedSrc = src;
+    document.body.appendChild(s);
+  });
+}
+
+/* ---------- Rendering ---------- */
+function allCategories(){
+  const set = new Set();
+  STATE.links.forEach(l => (l.categories||[]).forEach(c => set.add(c)));
+  return Array.from(set).sort((a,b)=>a.localeCompare(b));
+}
+
+function refreshCategoryOptions(){
+  const cats = allCategories();
+  const filterSel = $('#categoryFilter');
+  const current = filterSel.value;
+  filterSel.innerHTML = '<option value="">Toutes catégories</option>' +
+    cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  filterSel.value = cats.includes(current) ? current : '';
+
+  const list = $('#categoryList');
+  list.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function filteredLinks(){
+  return STATE.links.filter(l=>{
+    if(STATE.priorityFilter !== 'toutes' && l.priority !== STATE.priorityFilter) return false;
+    if(STATE.categoryFilter && !(l.categories||[]).includes(STATE.categoryFilter)) return false;
+    if(STATE.platformFilter && l.platform !== STATE.platformFilter) return false;
+    if(STATE.search){
+      const q = STATE.search.toLowerCase();
+      const hay = [l.url, l.note, ...(l.categories||[])].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
+}
+
+function render(){
+  refreshCategoryOptions();
+  const items = filteredLinks();
+  $('#countPill').textContent = items.length + (items.length>1 ? ' liens' : ' lien');
+  $('#emptyState').style.display = (STATE.links.length === 0) ? 'block' : 'none';
+  $('#gridView').style.display = (STATE.view === 'grid' && STATE.links.length) ? 'grid' : 'none';
+  $('#listView').style.display = (STATE.view === 'list' && STATE.links.length) ? 'table' : 'none';
+
+  if(STATE.view === 'grid'){
+    renderGrid(items);
+  } else {
+    renderList(items);
+  }
+}
+
+function renderGrid(items){
+  const grid = $('#gridView');
+  grid.innerHTML = items.map(l => `
+    <div class="card" data-id="${l.id}">
+      <div class="embed-wrap">${buildEmbedHTML(l)}</div>
+      <div class="card-meta">
+        <div class="chips">
+          <span class="chip priority ${l.priority}">${l.priority}</span>
+          ${(l.categories||[]).map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}
+        </div>
+        ${l.note ? `<div class="card-note">${escapeHtml(l.note)}</div>` : ''}
+        <div class="card-actions">
+          <button class="btn-icon" data-action="edit" data-id="${l.id}">✎ Éditer</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  reprocessEmbeds();
+}
+
+function renderList(items){
+  const body = $('#listBody');
+  body.innerHTML = items.map(l => `
+    <tr data-id="${l.id}">
+      <td><span class="plat-badge"><span class="plat-dot plat-${l.platform}"></span>${platformLabel(l.platform)}</span></td>
+      <td class="url-cell"><a href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a></td>
+      <td>${(l.categories||[]).map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join(' ')}</td>
+      <td><span class="chip priority ${l.priority}">${l.priority}</span></td>
+      <td>${new Date(l.addedAt).toLocaleDateString('fr-FR')}</td>
+      <td style="max-width:220px;">${escapeHtml(l.note||'')}</td>
+      <td class="row-actions">
+        <button class="btn-icon" data-action="edit" data-id="${l.id}">✎</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-action="edit"]');
+  if(btn) openEditModal(btn.dataset.id);
+});
+
+/* ---------- View toggle ---------- */
+$('#viewGridBtn').onclick = ()=>{ STATE.view='grid'; $('#viewGridBtn').classList.add('active'); $('#viewListBtn').classList.remove('active'); render(); };
+$('#viewListBtn').onclick = ()=>{ STATE.view='list'; $('#viewListBtn').classList.add('active'); $('#viewGridBtn').classList.remove('active'); render(); };
+
+/* ---------- Filters ---------- */
+$('#priorityTabs').addEventListener('click', (e)=>{
+  const tab = e.target.closest('.tab');
+  if(!tab) return;
+  $$('#priorityTabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  STATE.priorityFilter = tab.dataset.p;
+  render();
+});
+$('#categoryFilter').onchange = (e)=>{ STATE.categoryFilter = e.target.value; render(); };
+$('#platformFilter').onchange = (e)=>{ STATE.platformFilter = e.target.value; render(); };
+$('#searchInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
+
+/* ---------- Add / Edit modal ---------- */
+function resetLinkModal(){
+  $('#linkUrl').value = '';
+  $('#linkCategories').value = '';
+  $('#linkNote').value = '';
+  $('#detectedPlat').textContent = '';
+  setPriorityPick('moyenne');
+  STATE.editingId = null;
+  $('#linkModalTitle').textContent = 'Ajouter un lien';
+  $('#saveLinkBtn').textContent = 'Ajouter';
+  $('#deleteLinkBtn').style.display = 'none';
+}
+
+function setPriorityPick(p){
+  $$('#priorityPicker button').forEach(b=>b.classList.toggle('sel', b.dataset.p === p));
+}
+
+$('#addBtn').onclick = ()=>{ resetLinkModal(); $('#linkOverlay').classList.add('show'); };
+$('#cancelLinkBtn').onclick = ()=> $('#linkOverlay').classList.remove('show');
+
+$('#linkUrl').addEventListener('input', ()=>{
+  const url = $('#linkUrl').value.trim();
+  if(!url){ $('#detectedPlat').textContent=''; return; }
+  const p = detectPlatform(url);
+  $('#detectedPlat').textContent = 'Détecté : ' + platformLabel(p);
+});
+
+$('#priorityPicker').addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if(!b) return;
+  setPriorityPick(b.dataset.p);
+});
+
+function openEditModal(id){
+  const link = STATE.links.find(l=>l.id===id);
+  if(!link) return;
+  resetLinkModal();
+  STATE.editingId = id;
+  $('#linkUrl').value = link.url;
+  $('#linkCategories').value = (link.categories||[]).join(', ');
+  $('#linkNote').value = link.note || '';
+  setPriorityPick(link.priority);
+  $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
+  $('#linkModalTitle').textContent = 'Éditer le lien';
+  $('#saveLinkBtn').textContent = 'Enregistrer';
+  $('#deleteLinkBtn').style.display = 'inline-block';
+  $('#linkOverlay').classList.add('show');
+}
+
+$('#saveLinkBtn').onclick = ()=>{
+  const url = $('#linkUrl').value.trim();
+  if(!url){ toast('Colle un lien avant d\'enregistrer'); return; }
+  const categories = $('#linkCategories').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
+  const note = $('#linkNote').value.trim();
+
+  if(STATE.editingId){
+    const link = STATE.links.find(l=>l.id===STATE.editingId);
+    link.url = url;
+    link.platform = detectPlatform(url);
+    link.categories = categories;
+    link.priority = priority;
+    link.note = note;
+  } else {
+    STATE.links.push({
+      id: uid(),
+      url,
+      platform: detectPlatform(url),
+      categories,
+      priority,
+      note,
+      addedAt: new Date().toISOString()
+    });
+  }
+  $('#linkOverlay').classList.remove('show');
+  render();
+  saveToGitHub();
+};
+
+$('#deleteLinkBtn').onclick = ()=>{
+  if(!STATE.editingId) return;
+  if(!confirm('Supprimer ce lien ?')) return;
+  STATE.links = STATE.links.filter(l=>l.id !== STATE.editingId);
+  $('#linkOverlay').classList.remove('show');
+  render();
+  saveToGitHub();
+};
+
+// close modals on overlay click
+[$('#linkOverlay'), $('#settingsOverlay')].forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target === ov) ov.classList.remove('show'); });
+});
+
+/* ---------- Init ---------- */
+loadFromGitHub();
+
+})();
+</script>
+</body>
+</html>

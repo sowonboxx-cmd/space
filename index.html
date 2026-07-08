@@ -121,9 +121,14 @@
   }
   .card .embed-wrap{
     min-height:120px; background:#f0eee7; display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
+    overflow:hidden; opacity:0; transition:opacity .25s ease;
   }
-  .card .embed-wrap iframe, .card .embed-wrap blockquote{width:100%;}
+  .card .embed-wrap.ready{opacity:1;}
+  /* !important overrides the inline width Instagram's own embed.js sets via
+     JS on its generated iframe — without this, the iframe briefly renders
+     at its own fixed (often narrow) default width before Instagram resizes
+     it, which looks like a stray side banner loading in. */
+  .card .embed-wrap iframe, .card .embed-wrap blockquote{width:100% !important; max-width:100% !important;}
   .card .other-preview{
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:8px; padding:30px 16px; text-align:center;
@@ -871,6 +876,11 @@ function renderGrid(items){
   `).join('');
   reprocessEmbeds(items);
   populateOembedSlots(items);
+  // Force a frame boundary before revealing, so the opacity transition
+  // actually plays instead of being coalesced with the innerHTML write.
+  requestAnimationFrame(()=>{
+    grid.querySelectorAll('.embed-wrap').forEach(el=>el.classList.add('ready'));
+  });
 }
 
 function renderList(items){

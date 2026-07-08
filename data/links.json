@@ -66,10 +66,20 @@
       "url": "https://www.tiktok.com/@ceo_masterpiece/video/7607758252943756564?embed_source=121374463%2C121468991%2C121439635%2C121749182%2C121433650%2C121404358%2C121497414%2C122349556%2C122221973%2C122122240%2C121351166%2C121811500%2C121960941%2C122122244%2C122122243%2C122122242%2C121487028%2C122258714%2C121331973%2C120811592%2C120810756%2C121885509%3Bnull%3Bembed_pause_share&refer=embed&referer_url=embed.notion.co%2Fapi%2Fiframe%3Fapp%3D1%26url%3Dhttps%253A%252F%252Fwww.tiktok.com%252F%2540ceo_masterpiece%252Fvideo%252F7607758252943756564%26key%3D656ac74fac4fff346b811dca7919d483&referer_video_id=7607758252943756564",
       "platform": "tiktok",
       "categories": [],
-      "account": "",
+      "account": "Mr Kachi Iyeh",
       "priority": "faible",
       "note": "",
       "addedAt": "2026-07-08T17:50:39.181Z"
+    },
+    {
+      "id": "l_mrcdmfm7y45xdi",
+      "url": "https://x.com/Preda2005/status/2047504178717827211?s=20",
+      "platform": "twitter",
+      "categories": [],
+      "account": "",
+      "priority": "faible",
+      "note": "",
+      "addedAt": "2026-07-08T17:53:28.975Z"
     }
   ]
 }

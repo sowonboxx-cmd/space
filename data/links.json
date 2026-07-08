@@ -10,7 +10,8 @@
       "priority": "haute",
       "note": "Instru de l'espace",
       "addedAt": "2026-07-08T14:51:18.488Z",
-      "account": "Japanese_rap_lyric"
+      "account": "Japanese_rap_lyric",
+      "sortOrder": 1
     },
     {
       "id": "l_mrc91li26r2mrn",
@@ -22,7 +23,8 @@
       "account": "",
       "priority": "moyenne",
       "note": "Jedi style",
-      "addedAt": "2026-07-08T15:45:18.362Z"
+      "addedAt": "2026-07-08T15:45:18.362Z",
+      "sortOrder": 2
     },
     {
       "id": "l_mrc99jcl2fdeee",
@@ -34,7 +36,8 @@
       "account": "",
       "priority": "moyenne",
       "note": "Flash effect, clone, promo vêtements",
-      "addedAt": "2026-07-08T15:51:28.821Z"
+      "addedAt": "2026-07-08T15:51:28.821Z",
+      "sortOrder": 3
     },
     {
       "id": "l_mrc9qr1e7z6uo2",
@@ -47,7 +50,8 @@
       "account": "Reels",
       "priority": "haute",
       "note": "",
-      "addedAt": "2026-07-08T16:04:51.938Z"
+      "addedAt": "2026-07-08T16:04:51.938Z",
+      "sortOrder": 4
     },
     {
       "id": "l_mrcc37uic9ninf",
@@ -59,7 +63,8 @@
       "account": "",
       "priority": "aucune",
       "note": "",
-      "addedAt": "2026-07-08T17:10:32.826Z"
+      "addedAt": "2026-07-08T17:10:32.826Z",
+      "sortOrder": 6
     },
     {
       "id": "l_mrcdislpw0noha",
@@ -69,7 +74,8 @@
       "account": "Mr Kachi Iyeh",
       "priority": "faible",
       "note": "",
-      "addedAt": "2026-07-08T17:50:39.181Z"
+      "addedAt": "2026-07-08T17:50:39.181Z",
+      "sortOrder": 5
     },
     {
       "id": "l_mrcif4g2lj1g4u",
@@ -81,7 +87,8 @@
       "account": "",
       "priority": "haute",
       "note": "",
-      "addedAt": "2026-07-08T20:07:45.986Z"
+      "addedAt": "2026-07-08T20:07:45.986Z",
+      "sortOrder": 7
     }
   ]
 }

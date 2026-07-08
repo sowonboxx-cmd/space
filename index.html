@@ -99,6 +99,14 @@
   }
   .card .other-preview img{width:36px; height:36px; border-radius:8px;}
   .card .other-preview a{color:var(--ink); font-weight:600; text-decoration:none; font-size:13.5px; word-break:break-all;}
+  .oembed-loading{padding:40px 16px; font-size:12.5px; color:var(--text-dim); text-align:center; width:100%;}
+  .oembed-card{display:block; width:100%; text-decoration:none; color:var(--text);}
+  .oembed-card img{width:100%; display:block; aspect-ratio:9/14; object-fit:cover;}
+  .oembed-card .oembed-meta{padding:10px 12px; display:flex; flex-direction:column; gap:2px;}
+  .oembed-card .oembed-meta strong{font-size:13px; color:var(--ink);}
+  .oembed-card .oembed-meta span{font-size:12px; color:var(--text-dim); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .oembed-card.oembed-text{padding:14px; font-size:13px; line-height:1.4;}
+  .oembed-card.oembed-text blockquote{margin:0;}
   .card-meta{padding:10px 12px; border-top:1px solid var(--line);}
   .chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px;}
   .chip{
@@ -299,6 +307,10 @@
       <label>Branche</label>
       <input type="text" id="ghBranch" placeholder="main">
     </div>
+    <div class="field">
+      <label>URL du Worker (preview TikTok / X)</label>
+      <input type="text" id="workerUrl" placeholder="https://vault-oembed.ton-worker.workers.dev">
+    </div>
     <div class="sync-note" id="syncStatus" style="color:var(--text-dim);"></div>
     <div class="modal-actions">
       <div class="right" style="margin-left:auto;">
@@ -320,6 +332,8 @@ const EMBED_SRC = {
   tiktok: 'https://www.tiktok.com/embed.js',
   threads: 'https://www.threads.net/embed.js'
 };
+
+const oembedCache = new Map(); // url -> {status:'loading'|'ok'|'error', data}
 
 let STATE = {
   links: [],
@@ -358,6 +372,7 @@ function openSettings(){
   $('#ghRepo').value = s.repo || '';
   $('#ghPath').value = s.path || 'data/links.json';
   $('#ghBranch').value = s.branch || 'main';
+  $('#workerUrl').value = s.workerUrl || '';
   $('#syncStatus').textContent = s.repo ? ('Dernière sync : ' + (s.lastSync ? new Date(s.lastSync).toLocaleString('fr-FR') : 'jamais')) : 'Pas encore configuré.';
   $('#settingsOverlay').classList.add('show');
 }
@@ -371,9 +386,12 @@ $('#saveSettingsBtn').onclick = function(){
   s.repo = $('#ghRepo').value.trim();
   s.path = $('#ghPath').value.trim() || 'data/links.json';
   s.branch = $('#ghBranch').value.trim() || 'main';
+  s.workerUrl = $('#workerUrl').value.trim().replace(/\/$/, '');
   setSettings(s);
   closeSettings();
   toast('Réglages enregistrés');
+  oembedCache.clear();
+  render();
   loadFromGitHub();
 };
 
@@ -503,14 +521,18 @@ function buildEmbedHTML(link){
     const permalink = normalizeInstagramUrl(url);
     return `<blockquote class="instagram-media" data-instgrm-permalink="${permalink}" style="margin:0;width:100%;min-height:300px;"><a href="${permalink}">${permalink}</a></blockquote>`;
   }
-  if(platform === 'twitter'){
-    return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;
-  }
-  if(platform === 'tiktok'){
-    return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
-  }
   if(platform === 'threads'){
     return `<blockquote class="text-post-media" data-text-post-permalink="${url}" style="max-width:100%;"><a href="${url}">${url}</a></blockquote>`;
+  }
+  if(platform === 'twitter' || platform === 'tiktok'){
+    // Handled asynchronously via the Worker (see populateOembedSlot) —
+    // this is just the placeholder shown while it loads / as a no-worker fallback.
+    const s = getSettings();
+    if(!s.workerUrl){
+      if(platform === 'twitter') return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;
+      return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
+    }
+    return `<div class="oembed-loading">Chargement de la preview…</div>`;
   }
   let domain = '';
   try{ domain = new URL(url).hostname.replace('www.',''); }catch(e){ domain = url; }
@@ -518,6 +540,74 @@ function buildEmbedHTML(link){
     <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
     <a href="${url}" target="_blank" rel="noopener">${domain}</a>
   </div>`;
+}
+
+/* ---------- oEmbed via Cloudflare Worker (TikTok / Twitter) ---------- */
+function fetchOembed(url){
+  const s = getSettings();
+  if(!s.workerUrl) return Promise.resolve(null);
+  const cached = oembedCache.get(url);
+  if(cached){
+    // either an in-flight promise, or a resolved non-error entry: reuse it
+    if(typeof cached.then === 'function') return cached;
+    if(cached.status !== 'error') return Promise.resolve(cached);
+  }
+  const promise = (async ()=>{
+    try{
+      const res = await fetch(`${s.workerUrl}/oembed?url=${encodeURIComponent(url)}`);
+      if(!res.ok) throw new Error('worker ' + res.status);
+      const data = await res.json();
+      const entry = {status:'ok', data};
+      oembedCache.set(url, entry);
+      return entry;
+    } catch(err){
+      const entry = {status:'error', data:null};
+      oembedCache.set(url, entry);
+      return entry;
+    }
+  })();
+  oembedCache.set(url, promise);
+  return promise;
+}
+
+function renderOembedCard(entry, link){
+  if(!entry || entry.status === 'error'){
+    let domain = '';
+    try{ domain = new URL(link.url).hostname.replace('www.',''); }catch(e){ domain = link.url; }
+    return `<div class="other-preview">
+      <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
+      <a href="${link.url}" target="_blank" rel="noopener">Voir sur ${platformLabel(link.platform)}</a>
+    </div>`;
+  }
+  const d = entry.data;
+  const author = d.author_name ? escapeHtml(d.author_name) : platformLabel(link.platform);
+  if(d.thumbnail_url){
+    return `<a class="oembed-card" href="${link.url}" target="_blank" rel="noopener">
+      <img src="${d.thumbnail_url}" alt="">
+      <div class="oembed-meta"><strong>${author}</strong>${d.title ? `<span>${escapeHtml(d.title)}</span>` : ''}</div>
+    </a>`;
+  }
+  if(d.html){
+    // Static, unprocessed oEmbed HTML (e.g. Twitter's quoted blockquote) —
+    // plain markup, no live third-party script involved.
+    return `<div class="oembed-card oembed-text">${d.html}</div>`;
+  }
+  return `<div class="other-preview">
+    <a href="${link.url}" target="_blank" rel="noopener"><strong>${author}</strong><br>Voir sur ${platformLabel(link.platform)}</a>
+  </div>`;
+}
+
+function populateOembedSlots(items){
+  const s = getSettings();
+  if(!s.workerUrl) return;
+  items.forEach(link=>{
+    if(link.platform !== 'twitter' && link.platform !== 'tiktok') return;
+    fetchOembed(link.url).then(entry=>{
+      const slot = document.querySelector(`.embed-wrap[data-id="${link.id}"]`);
+      if(!slot) return; // card no longer in view (filtered out / re-rendered)
+      slot.innerHTML = renderOembedCard(entry, link);
+    });
+  });
 }
 
 function reprocessEmbeds(){
@@ -588,7 +678,7 @@ function renderGrid(items){
   const grid = $('#gridView');
   grid.innerHTML = items.map(l => `
     <div class="card" data-id="${l.id}">
-      <div class="embed-wrap">${buildEmbedHTML(l)}</div>
+      <div class="embed-wrap" data-id="${l.id}">${buildEmbedHTML(l)}</div>
       <div class="card-meta">
         <div class="chips">
           <span class="chip priority ${l.priority}">${l.priority}</span>
@@ -602,6 +692,7 @@ function renderGrid(items){
     </div>
   `).join('');
   reprocessEmbeds();
+  populateOembedSlots(items);
 }
 
 function renderList(items){

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Space — Inspiration Hub</title>
 <style>
   :root{
@@ -74,6 +74,7 @@
   .tab{
     padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600;
     background:#eeeae0; color:var(--text-dim); border:1px solid transparent;
+    cursor:pointer;
   }
   .tab[data-p="haute"].active{background:var(--haute); color:#fff;}
   .tab[data-p="moyenne"].active{background:var(--moyenne); color:#2b1e00;}
@@ -83,6 +84,22 @@
     font-family:var(--font-body); font-size:13.5px; padding:7px 10px;
     border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text);
   }
+  select{cursor:pointer;}
+  .select-wrap{position:relative; display:inline-flex;}
+  .select-wrap select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    font-size:13px; font-weight:600; padding:6px 28px 6px 14px;
+    border-radius:20px; background:#eeeae0; color:var(--text-dim); border:1px solid transparent;
+  }
+  .select-wrap::after{
+    content:'▾'; position:absolute; right:11px; top:50%; transform:translateY(-50%);
+    font-size:11px; color:var(--text-dim); pointer-events:none;
+  }
+  .btn-rename-cat{
+    background:transparent; border:1px solid var(--line); color:var(--text-dim);
+    padding:6px 10px; border-radius:8px; font-size:13px;
+  }
+  .btn-rename-cat:hover{background:#eeeae0;}
   .filters .spacer{flex:1;}
   .count-pill{font-size:12px; color:var(--text-dim); font-family:var(--font-mono);}
 
@@ -122,7 +139,7 @@
     font-size:11px; padding:2px 8px; border-radius:20px; background:#eeeae0; color:var(--text-dim);
     font-weight:600;
   }
-  .chip.priority{color:#fff;}
+  .chip.priority{color:#fff; cursor:pointer;}
   .chip.priority.haute{background:var(--haute);}
   .chip.priority.moyenne{background:var(--moyenne); color:#2b1e00;}
   .chip.priority.faible{background:var(--faible);}
@@ -265,16 +282,10 @@
       <div class="tab" data-p="moyenne">Moyenne</div>
       <div class="tab" data-p="faible">Faible</div>
     </div>
-    <select id="categoryFilter"><option value="">Toutes catégories</option></select>
-    <select id="accountFilter"><option value="">Tous les comptes</option></select>
-    <select id="platformFilter">
-      <option value="">Toutes plateformes</option>
-      <option value="instagram">Instagram</option>
-      <option value="twitter">X / Twitter</option>
-      <option value="tiktok">TikTok</option>
-      <option value="threads">Threads</option>
-      <option value="other">Autre</option>
-    </select>
+    <div class="select-wrap">
+      <select id="categoryFilter"><option value="">Catégories</option></select>
+    </div>
+    <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
     <input type="search" id="searchInput" placeholder="Rechercher...">
     <div class="spacer"></div>
     <span class="count-pill" id="countPill"></span>
@@ -318,11 +329,6 @@
         <input type="text" id="categoryInput" list="categoryList" placeholder="Ajouter une catégorie, Entrée pour valider">
         <datalist id="categoryList"></datalist>
       </div>
-    </div>
-    <div class="field">
-      <label>Compte / créateur (optionnel)</label>
-      <input type="text" id="linkAccount" list="accountList" placeholder="ex: japanese_lyrics">
-      <datalist id="accountList"></datalist>
     </div>
     <div class="field">
       <label>Priorité</label>
@@ -690,16 +696,52 @@ function populateOembedSlots(items){
   });
 }
 
-function reprocessEmbeds(){
-  Object.entries(EMBED_SRC).forEach(([platform, src])=>{
-    const old = document.querySelector(`script[data-embed-src="${src}"]`);
+const embedScriptLoaded = {}; // platform -> true once its script tag has been inserted
+
+function ensureEmbedScript(platform){
+  if(embedScriptLoaded[platform]) return;
+  embedScriptLoaded[platform] = true;
+  const s = document.createElement('script');
+  s.src = EMBED_SRC[platform];
+  s.async = true;
+  document.body.appendChild(s);
+}
+
+function reprocessEmbeds(items){
+  const settings = getSettings();
+  const platformsPresent = new Set(items.map(l=>l.platform));
+
+  if(platformsPresent.has('instagram')){
+    ensureEmbedScript('instagram');
+    // Instagram's embed.js does NOT watch the DOM for new content — it must
+    // be told to re-scan explicitly, or blockquotes added after a filter/tab
+    // switch never turn into the actual embed (this was the "embed
+    // disappears when switching tabs" bug).
+    if(window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+  }
+  if(platformsPresent.has('threads')){
+    // No documented reprocess API for Threads' embed script — reinserting
+    // the tag is the only known way to get it to scan again.
+    const old = document.querySelector('script[data-embed-src="threads"]');
     if(old) old.remove();
     const s = document.createElement('script');
-    s.src = src;
+    s.src = EMBED_SRC.threads;
     s.async = true;
-    s.dataset.embedSrc = src;
+    s.dataset.embedSrc = 'threads';
     document.body.appendChild(s);
-  });
+  }
+  // Twitter/TikTok are rendered via the Worker's static oEmbed card when a
+  // Worker URL is configured, so their live scripts are only needed for the
+  // raw-blockquote fallback path (no Worker configured yet).
+  if(!settings.workerUrl){
+    if(platformsPresent.has('twitter')){
+      ensureEmbedScript('twitter');
+      if(window.twttr && window.twttr.widgets) window.twttr.widgets.load();
+    }
+    if(platformsPresent.has('tiktok')){
+      ensureEmbedScript('tiktok'); // TikTok's script watches the DOM itself
+    }
+  }
 }
 
 /* ---------- Rendering ---------- */
@@ -721,27 +763,15 @@ function allAccounts(){
 function refreshCategoryOptions(){
   const cats = allCategories();
   const filterSel = $('#categoryFilter');
-  const current = filterSel.value;
-  filterSel.innerHTML = '<option value="">Toutes catégories</option>' +
+  filterSel.innerHTML = '<option value="">Catégories</option>' +
     cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-  filterSel.value = cats.includes(current) ? current : '';
+  filterSel.value = STATE.categoryFilter;
 
   const list = $('#categoryList');
   list.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
+
+  $('#renameCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
 }
-
-function refreshAccountOptions(){
-  const accts = allAccounts();
-  const filterSel = $('#accountFilter');
-  const current = filterSel.value;
-  filterSel.innerHTML = '<option value="">Tous les comptes</option>' +
-    accts.map(([name,count]) => `<option value="${escapeHtml(name)}">${escapeHtml(name)} (${count})</option>`).join('');
-  filterSel.value = accts.some(([name])=>name===current) ? current : '';
-
-  const list = $('#accountList');
-  list.innerHTML = accts.map(([name]) => `<option value="${escapeHtml(name)}">`).join('');
-}
-
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -752,7 +782,6 @@ function filteredLinks(){
     if(STATE.priorityFilter !== 'toutes' && l.priority !== STATE.priorityFilter) return false;
     if(STATE.categoryFilter && !(l.categories||[]).includes(STATE.categoryFilter)) return false;
     if(STATE.accountFilter && l.account !== STATE.accountFilter) return false;
-    if(STATE.platformFilter && l.platform !== STATE.platformFilter) return false;
     if(STATE.search){
       const q = STATE.search.toLowerCase();
       const hay = [l.url, l.note, l.account, ...(l.categories||[])].filter(Boolean).join(' ').toLowerCase();
@@ -763,8 +792,9 @@ function filteredLinks(){
 }
 
 function render(){
+  syncControls();
+  persistUIState();
   refreshCategoryOptions();
-  refreshAccountOptions();
   const items = filteredLinks();
   $('#countPill').textContent = items.length + (items.length>1 ? ' liens' : ' lien');
   $('#emptyState').style.display = (STATE.links.length === 0) ? 'block' : 'none';
@@ -778,9 +808,13 @@ function render(){
   }
 }
 
+function capitalize(s){
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
 function chipsHTML(l){
   return `
-    <span class="chip priority ${l.priority}" data-priority="${l.priority}">${l.priority}</span>
+    <span class="chip priority ${l.priority}" data-priority="${l.priority}">${capitalize(l.priority)}</span>
     ${l.account ? `<span class="chip acct-chip" data-acct="${escapeHtml(l.account)}">@${escapeHtml(l.account)}</span>` : ''}
     ${(l.categories||[]).map(c=>`<span class="chip cat-chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</span>`).join('')}
   `;
@@ -800,7 +834,7 @@ function renderGrid(items){
       </div>
     </div>
   `).join('');
-  reprocessEmbeds();
+  reprocessEmbeds(items);
   populateOembedSlots(items);
 }
 
@@ -826,44 +860,88 @@ document.addEventListener('click', (e)=>{
 
   const catChip = e.target.closest('.chip.cat-chip');
   if(catChip){
-    STATE.categoryFilter = catChip.dataset.cat;
-    $('#categoryFilter').value = STATE.categoryFilter;
+    STATE.categoryFilter = (STATE.categoryFilter === catChip.dataset.cat) ? '' : catChip.dataset.cat;
     render();
     return;
   }
   const acctChip = e.target.closest('.chip.acct-chip');
   if(acctChip){
-    STATE.accountFilter = acctChip.dataset.acct;
-    $('#accountFilter').value = STATE.accountFilter;
+    STATE.accountFilter = (STATE.accountFilter === acctChip.dataset.acct) ? '' : acctChip.dataset.acct;
     render();
     return;
   }
   const prioChip = e.target.closest('.chip.priority');
   if(prioChip){
     STATE.priorityFilter = prioChip.dataset.priority;
-    $$('#priorityTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.p === STATE.priorityFilter));
     render();
     return;
   }
 });
 
+/* ---------- Persisted UI state (view + filters survive a page reload) ---------- */
+function persistUIState(){
+  try{
+    localStorage.setItem('vault_ui_state', JSON.stringify({
+      view: STATE.view,
+      priorityFilter: STATE.priorityFilter,
+      categoryFilter: STATE.categoryFilter,
+      accountFilter: STATE.accountFilter,
+      search: STATE.search
+    }));
+  } catch(e){ /* ignore */ }
+}
+
+function restoreUIState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('vault_ui_state') || '{}');
+    if(saved.view) STATE.view = saved.view;
+    if(saved.priorityFilter) STATE.priorityFilter = saved.priorityFilter;
+    if(saved.categoryFilter) STATE.categoryFilter = saved.categoryFilter;
+    if(saved.accountFilter) STATE.accountFilter = saved.accountFilter;
+    if(saved.search) STATE.search = saved.search;
+  } catch(e){ /* ignore */ }
+}
+
+function syncControls(){
+  $('#searchInput').value = STATE.search;
+  $$('#priorityTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.p === STATE.priorityFilter));
+  $('#viewGridBtn').classList.toggle('active', STATE.view === 'grid');
+  $('#viewListBtn').classList.toggle('active', STATE.view === 'list');
+}
+
 /* ---------- View toggle ---------- */
-$('#viewGridBtn').onclick = ()=>{ STATE.view='grid'; $('#viewGridBtn').classList.add('active'); $('#viewListBtn').classList.remove('active'); render(); };
-$('#viewListBtn').onclick = ()=>{ STATE.view='list'; $('#viewListBtn').classList.add('active'); $('#viewGridBtn').classList.remove('active'); render(); };
+$('.view-toggle').addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if(!b) return;
+  STATE.view = (b.id === 'viewListBtn') ? 'list' : 'grid';
+  render();
+});
 
 /* ---------- Filters ---------- */
 $('#priorityTabs').addEventListener('click', (e)=>{
   const tab = e.target.closest('.tab');
   if(!tab) return;
-  $$('#priorityTabs .tab').forEach(t=>t.classList.remove('active'));
-  tab.classList.add('active');
   STATE.priorityFilter = tab.dataset.p;
   render();
 });
 $('#categoryFilter').onchange = (e)=>{ STATE.categoryFilter = e.target.value; render(); };
-$('#accountFilter').onchange = (e)=>{ STATE.accountFilter = e.target.value; render(); };
-$('#platformFilter').onchange = (e)=>{ STATE.platformFilter = e.target.value; render(); };
 $('#searchInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
+
+$('#renameCatBtn').onclick = ()=>{
+  const oldName = STATE.categoryFilter;
+  if(!oldName) return;
+  const newName = (prompt('Renommer la catégorie « ' + oldName + ' » en :', oldName) || '').trim();
+  if(!newName || newName === oldName) return;
+  STATE.links.forEach(l=>{
+    if(!(l.categories||[]).includes(oldName)) return;
+    const set = new Set(l.categories.map(c=> c === oldName ? newName : c));
+    l.categories = Array.from(set);
+  });
+  STATE.categoryFilter = newName;
+  render();
+  saveToGitHub();
+  toast('Catégorie renommée');
+};
 
 /* ---------- Add / Edit modal ---------- */
 function renderCategoryChips(){
@@ -903,7 +981,6 @@ function resetLinkModal(){
   STATE.modalCategories = [];
   $('#categoryInput').value = '';
   renderCategoryChips();
-  $('#linkAccount').value = '';
   $('#linkNote').value = '';
   $('#detectedPlat').textContent = '';
   setPriorityPick('moyenne');
@@ -941,7 +1018,6 @@ function openEditModal(id){
   $('#linkUrl').value = link.url;
   STATE.modalCategories = (link.categories||[]).slice();
   renderCategoryChips();
-  $('#linkAccount').value = link.account || '';
   $('#linkNote').value = link.note || '';
   setPriorityPick(link.priority);
   $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
@@ -956,7 +1032,6 @@ $('#saveLinkBtn').onclick = ()=>{
   if(!url){ toast('Colle un lien avant d\'enregistrer'); return; }
   addCategoriesFromInput(); // catch anything typed but not yet committed as a chip
   const categories = STATE.modalCategories.slice();
-  const account = $('#linkAccount').value.trim();
   const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
   const note = $('#linkNote').value.trim();
 
@@ -965,7 +1040,6 @@ $('#saveLinkBtn').onclick = ()=>{
     link.url = url;
     link.platform = detectPlatform(url);
     link.categories = categories;
-    link.account = account;
     link.priority = priority;
     link.note = note;
   } else {
@@ -974,7 +1048,7 @@ $('#saveLinkBtn').onclick = ()=>{
       url,
       platform: detectPlatform(url),
       categories,
-      account,
+      account: '',
       priority,
       note,
       addedAt: new Date().toISOString()
@@ -1000,6 +1074,7 @@ $('#deleteLinkBtn').onclick = ()=>{
 });
 
 /* ---------- Init ---------- */
+restoreUIState();
 loadFromGitHub();
 
 })();

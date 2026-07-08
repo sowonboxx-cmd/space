@@ -486,10 +486,22 @@ function platformLabel(p){
   return {instagram:'Instagram', twitter:'X / Twitter', tiktok:'TikTok', threads:'Threads', other:'Autre'}[p] || 'Autre';
 }
 
+function normalizeInstagramUrl(url){
+  // Instagram's public embed.js reliably supports singular /reel/ and /p/
+  // permalinks, but silently fails to render for the plural /reels/ path
+  // (the one Instagram sometimes gives from the Reels tab). Normalize it.
+  try{
+    const u = new URL(url);
+    u.pathname = u.pathname.replace(/^\/reels\//, '/reel/');
+    return u.toString();
+  } catch(e){ return url; }
+}
+
 function buildEmbedHTML(link){
   const {platform, url} = link;
   if(platform === 'instagram'){
-    return `<blockquote class="instagram-media" data-instgrm-permalink="${url}" style="margin:0;width:100%;min-height:300px;"><a href="${url}">${url}</a></blockquote>`;
+    const permalink = normalizeInstagramUrl(url);
+    return `<blockquote class="instagram-media" data-instgrm-permalink="${permalink}" style="margin:0;width:100%;min-height:300px;"><a href="${permalink}">${permalink}</a></blockquote>`;
   }
   if(platform === 'twitter'){
     return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;

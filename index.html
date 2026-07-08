@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vault — Inspiration Hub</title>
+<title>Space — Inspiration Hub</title>
 <style>
   :root{
     --ink:#0f1424;
@@ -31,9 +31,12 @@
   header.top{
     position:sticky; top:0; z-index:40;
     background:var(--ink); color:#f1efe8;
-    padding:14px 20px;
-    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    padding:14px 0;
     border-bottom:3px solid var(--gold);
+  }
+  .top-inner{
+    max-width:1400px; margin:0 auto; padding:0 20px;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
   }
   header.top h1{
     font-family:var(--font-display);
@@ -55,11 +58,17 @@
   .view-toggle{display:flex; border:1px solid rgba(255,255,255,.25); border-radius:8px; overflow:hidden;}
   .view-toggle button{border-radius:0; background:transparent; color:#f1efe8; padding:7px 12px;}
   .view-toggle button.active{background:var(--gold); color:#241a05;}
+  .icon-btn{display:inline-flex; align-items:center; gap:6px;}
+  .icon-btn .btn-ico{width:16px; height:16px; flex-shrink:0; display:none;}
 
   .filters{
     background:var(--paper-raised); border-bottom:1px solid var(--line);
     padding:10px 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
     position:sticky; top:57px; z-index:39;
+  }
+  .filters-inner{
+    max-width:1400px; margin:0 auto; width:100%;
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
   }
   .tabs{display:flex; gap:6px;}
   .tab{
@@ -169,6 +178,25 @@
   .priority-picker button[data-p="moyenne"].sel{background:var(--moyenne); color:#2b1e00;}
   .priority-picker button[data-p="faible"].sel{background:var(--faible); color:#fff;}
   .detected-plat{font-size:12px; color:var(--text-dim); margin-top:5px; font-family:var(--font-mono);}
+  .tag-input{
+    border:1px solid var(--line); border-radius:8px; padding:6px 8px; background:#fff;
+    display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .tag-chips{display:flex; flex-wrap:wrap; gap:5px;}
+  .tag-chip{
+    display:inline-flex; align-items:center; gap:4px; background:#eeeae0; color:var(--text);
+    font-size:12px; font-weight:600; padding:3px 6px 3px 10px; border-radius:20px;
+  }
+  .tag-chip .tag-remove{
+    background:none; border:none; color:var(--text-dim); font-size:15px; line-height:1; padding:0 2px;
+    cursor:pointer; font-weight:400;
+  }
+  .tag-chip .tag-remove:hover{color:var(--haute);}
+  .tag-input input{border:none; outline:none; flex:1; min-width:140px; padding:4px 2px;}
+  .chip.cat-chip, .chip.acct-chip{cursor:pointer;}
+  .chip.cat-chip:hover, .chip.acct-chip:hover{background:#e2ddcf;}
+  .chip.acct-chip{background:#e6e2f5; color:#3d3468;}
+  .chip.acct-chip:hover{background:#d9d2f2;}
   .modal-actions{display:flex; justify-content:space-between; gap:8px; margin-top:20px;}
   .modal-actions .right{display:flex; gap:8px;}
   .btn-danger{background:#fbeae9; color:var(--haute);}
@@ -182,47 +210,75 @@
   }
   .toast.show{display:block;}
   @media (max-width:640px){
-    header.top{padding:12px;}
+    header.top{padding:12px 0;}
+    .top-inner{padding:0 12px; flex-wrap:wrap;}
+    .top-actions{margin-left:0; flex:1 1 auto;}
+    .icon-btn .btn-ico{display:inline-block;}
+    .icon-btn .btn-label{display:none;}
+    .icon-btn{background:transparent!important; border:none!important; padding:8px;}
+    .view-toggle .icon-btn{opacity:.6;}
+    .view-toggle .icon-btn.active{opacity:1;}
+    .view-toggle{border:none;}
+    .view-toggle button.active{background:transparent; color:#f1efe8;}
+    #addBtn{flex:1 1 100%; order:10; text-align:center;}
     .filters{padding:10px 12px; position:static;}
     main{padding:12px;}
     .grid{grid-template-columns:1fr;}
+    input, select, textarea{font-size:16px;}
   }
 </style>
 </head>
 <body>
 
 <header class="top">
-  <h1><span class="dot"></span>Vault</h1>
-  <div class="top-actions">
-    <div class="view-toggle">
-      <button id="viewGridBtn" class="active">Grille</button>
-      <button id="viewListBtn">Liste</button>
+  <div class="top-inner">
+    <h1><span class="dot"></span>Space</h1>
+    <div class="top-actions">
+      <div class="view-toggle">
+        <button id="viewGridBtn" class="icon-btn active" title="Grille">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="btn-label">Grille</span>
+        </button>
+        <button id="viewListBtn" class="icon-btn" title="Liste">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          <span class="btn-label">Liste</span>
+        </button>
+      </div>
+      <button class="btn-ghost icon-btn" id="refreshBtn" title="Recharger depuis GitHub">
+        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+        <span class="btn-label">Sync</span>
+      </button>
+      <button class="btn-ghost icon-btn" id="settingsBtn" title="Réglages">
+        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="btn-label">Réglages</span>
+      </button>
+      <button class="btn-primary" id="addBtn">+ Ajouter un lien</button>
     </div>
-    <button class="btn-ghost" id="refreshBtn" title="Recharger depuis GitHub">↻ Sync</button>
-    <button class="btn-ghost" id="settingsBtn">⚙ Réglages</button>
-    <button class="btn-primary" id="addBtn">+ Ajouter un lien</button>
   </div>
 </header>
 
 <div class="filters">
-  <div class="tabs" id="priorityTabs">
-    <div class="tab active" data-p="toutes">Toutes</div>
-    <div class="tab" data-p="haute">Haute</div>
-    <div class="tab" data-p="moyenne">Moyenne</div>
-    <div class="tab" data-p="faible">Faible</div>
+  <div class="filters-inner">
+    <div class="tabs" id="priorityTabs">
+      <div class="tab active" data-p="toutes">Toutes</div>
+      <div class="tab" data-p="haute">Haute</div>
+      <div class="tab" data-p="moyenne">Moyenne</div>
+      <div class="tab" data-p="faible">Faible</div>
+    </div>
+    <select id="categoryFilter"><option value="">Toutes catégories</option></select>
+    <select id="accountFilter"><option value="">Tous les comptes</option></select>
+    <select id="platformFilter">
+      <option value="">Toutes plateformes</option>
+      <option value="instagram">Instagram</option>
+      <option value="twitter">X / Twitter</option>
+      <option value="tiktok">TikTok</option>
+      <option value="threads">Threads</option>
+      <option value="other">Autre</option>
+    </select>
+    <input type="search" id="searchInput" placeholder="Rechercher...">
+    <div class="spacer"></div>
+    <span class="count-pill" id="countPill"></span>
   </div>
-  <select id="categoryFilter"><option value="">Toutes catégories</option></select>
-  <select id="platformFilter">
-    <option value="">Toutes plateformes</option>
-    <option value="instagram">Instagram</option>
-    <option value="twitter">X / Twitter</option>
-    <option value="tiktok">TikTok</option>
-    <option value="threads">Threads</option>
-    <option value="other">Autre</option>
-  </select>
-  <input type="search" id="searchInput" placeholder="Rechercher...">
-  <div class="spacer"></div>
-  <span class="count-pill" id="countPill"></span>
 </div>
 
 <main>
@@ -232,8 +288,7 @@
       <tr>
         <th>Source</th>
         <th>Lien</th>
-        <th>Catégories</th>
-        <th>Priorité</th>
+        <th>Tags</th>
         <th>Ajouté</th>
         <th>Note</th>
         <th></th>
@@ -242,7 +297,7 @@
     <tbody id="listBody"></tbody>
   </table>
   <div class="empty-state" id="emptyState" style="display:none;">
-    <h2>Le vault est vide</h2>
+    <h2>Ton space est vide</h2>
     <p>Colle ton premier lien Instagram, X, TikTok ou Threads pour commencer.</p>
   </div>
 </main>
@@ -257,9 +312,17 @@
       <div class="detected-plat" id="detectedPlat"></div>
     </div>
     <div class="field">
-      <label>Catégories (séparées par une virgule)</label>
-      <input type="text" id="linkCategories" list="categoryList" placeholder="food, business, perso...">
-      <datalist id="categoryList"></datalist>
+      <label>Catégories</label>
+      <div class="tag-input" id="categoryTagInput">
+        <div class="tag-chips" id="categoryChips"></div>
+        <input type="text" id="categoryInput" list="categoryList" placeholder="Ajouter une catégorie, Entrée pour valider">
+        <datalist id="categoryList"></datalist>
+      </div>
+    </div>
+    <div class="field">
+      <label>Compte / créateur (optionnel)</label>
+      <input type="text" id="linkAccount" list="accountList" placeholder="ex: japanese_lyrics">
+      <datalist id="accountList"></datalist>
     </div>
     <div class="field">
       <label>Priorité</label>
@@ -341,9 +404,11 @@ let STATE = {
   view: 'grid',
   priorityFilter: 'toutes',
   categoryFilter: '',
+  accountFilter: '',
   platformFilter: '',
   search: '',
-  editingId: null
+  editingId: null,
+  modalCategories: []
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -525,12 +590,19 @@ function buildEmbedHTML(link){
     return `<blockquote class="text-post-media" data-text-post-permalink="${url}" style="max-width:100%;"><a href="${url}">${url}</a></blockquote>`;
   }
   if(platform === 'twitter' || platform === 'tiktok'){
-    // Handled asynchronously via the Worker (see populateOembedSlot) —
+    // Handled asynchronously via the Worker (see populateOembedSlots) —
     // this is just the placeholder shown while it loads / as a no-worker fallback.
     const s = getSettings();
     if(!s.workerUrl){
       if(platform === 'twitter') return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;
       return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
+    }
+    const cached = oembedCache.get(url);
+    if(cached && typeof cached.then !== 'function'){
+      // Already resolved on a previous render (e.g. before a filter/tab
+      // switch) — reuse it immediately instead of flashing "Chargement…"
+      // again while re-fetching data we already have.
+      return renderOembedCard(cached, link);
     }
     return `<div class="oembed-loading">Chargement de la preview…</div>`;
   }
@@ -603,6 +675,14 @@ function populateOembedSlots(items){
   items.forEach(link=>{
     if(link.platform !== 'twitter' && link.platform !== 'tiktok') return;
     fetchOembed(link.url).then(entry=>{
+      if(entry && entry.status === 'ok' && entry.data && entry.data.author_name && !link.account){
+        // Learn the account name once from oEmbed, so links can be grouped
+        // by creator even though the user didn't type it manually.
+        link.account = entry.data.author_name;
+        saveToGitHub();
+        render();
+        return;
+      }
       const slot = document.querySelector(`.embed-wrap[data-id="${link.id}"]`);
       if(!slot) return; // card no longer in view (filtered out / re-rendered)
       slot.innerHTML = renderOembedCard(entry, link);
@@ -629,6 +709,15 @@ function allCategories(){
   return Array.from(set).sort((a,b)=>a.localeCompare(b));
 }
 
+function allAccounts(){
+  const counts = new Map();
+  STATE.links.forEach(l => {
+    if(!l.account) return;
+    counts.set(l.account, (counts.get(l.account)||0) + 1);
+  });
+  return Array.from(counts.entries()).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
 function refreshCategoryOptions(){
   const cats = allCategories();
   const filterSel = $('#categoryFilter');
@@ -641,6 +730,19 @@ function refreshCategoryOptions(){
   list.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
 }
 
+function refreshAccountOptions(){
+  const accts = allAccounts();
+  const filterSel = $('#accountFilter');
+  const current = filterSel.value;
+  filterSel.innerHTML = '<option value="">Tous les comptes</option>' +
+    accts.map(([name,count]) => `<option value="${escapeHtml(name)}">${escapeHtml(name)} (${count})</option>`).join('');
+  filterSel.value = accts.some(([name])=>name===current) ? current : '';
+
+  const list = $('#accountList');
+  list.innerHTML = accts.map(([name]) => `<option value="${escapeHtml(name)}">`).join('');
+}
+
+
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -649,10 +751,11 @@ function filteredLinks(){
   return STATE.links.filter(l=>{
     if(STATE.priorityFilter !== 'toutes' && l.priority !== STATE.priorityFilter) return false;
     if(STATE.categoryFilter && !(l.categories||[]).includes(STATE.categoryFilter)) return false;
+    if(STATE.accountFilter && l.account !== STATE.accountFilter) return false;
     if(STATE.platformFilter && l.platform !== STATE.platformFilter) return false;
     if(STATE.search){
       const q = STATE.search.toLowerCase();
-      const hay = [l.url, l.note, ...(l.categories||[])].join(' ').toLowerCase();
+      const hay = [l.url, l.note, l.account, ...(l.categories||[])].filter(Boolean).join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
@@ -661,6 +764,7 @@ function filteredLinks(){
 
 function render(){
   refreshCategoryOptions();
+  refreshAccountOptions();
   const items = filteredLinks();
   $('#countPill').textContent = items.length + (items.length>1 ? ' liens' : ' lien');
   $('#emptyState').style.display = (STATE.links.length === 0) ? 'block' : 'none';
@@ -674,16 +778,21 @@ function render(){
   }
 }
 
+function chipsHTML(l){
+  return `
+    <span class="chip priority ${l.priority}" data-priority="${l.priority}">${l.priority}</span>
+    ${l.account ? `<span class="chip acct-chip" data-acct="${escapeHtml(l.account)}">@${escapeHtml(l.account)}</span>` : ''}
+    ${(l.categories||[]).map(c=>`<span class="chip cat-chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</span>`).join('')}
+  `;
+}
+
 function renderGrid(items){
   const grid = $('#gridView');
   grid.innerHTML = items.map(l => `
     <div class="card" data-id="${l.id}">
       <div class="embed-wrap" data-id="${l.id}">${buildEmbedHTML(l)}</div>
       <div class="card-meta">
-        <div class="chips">
-          <span class="chip priority ${l.priority}">${l.priority}</span>
-          ${(l.categories||[]).map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join('')}
-        </div>
+        <div class="chips">${chipsHTML(l)}</div>
         ${l.note ? `<div class="card-note">${escapeHtml(l.note)}</div>` : ''}
         <div class="card-actions">
           <button class="btn-icon" data-action="edit" data-id="${l.id}">✎ Éditer</button>
@@ -701,8 +810,7 @@ function renderList(items){
     <tr data-id="${l.id}">
       <td><span class="plat-badge"><span class="plat-dot plat-${l.platform}"></span>${platformLabel(l.platform)}</span></td>
       <td class="url-cell"><a href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a></td>
-      <td>${(l.categories||[]).map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join(' ')}</td>
-      <td><span class="chip priority ${l.priority}">${l.priority}</span></td>
+      <td>${chipsHTML(l)}</td>
       <td>${new Date(l.addedAt).toLocaleDateString('fr-FR')}</td>
       <td style="max-width:220px;">${escapeHtml(l.note||'')}</td>
       <td class="row-actions">
@@ -714,7 +822,29 @@ function renderList(items){
 
 document.addEventListener('click', (e)=>{
   const btn = e.target.closest('[data-action="edit"]');
-  if(btn) openEditModal(btn.dataset.id);
+  if(btn){ openEditModal(btn.dataset.id); return; }
+
+  const catChip = e.target.closest('.chip.cat-chip');
+  if(catChip){
+    STATE.categoryFilter = catChip.dataset.cat;
+    $('#categoryFilter').value = STATE.categoryFilter;
+    render();
+    return;
+  }
+  const acctChip = e.target.closest('.chip.acct-chip');
+  if(acctChip){
+    STATE.accountFilter = acctChip.dataset.acct;
+    $('#accountFilter').value = STATE.accountFilter;
+    render();
+    return;
+  }
+  const prioChip = e.target.closest('.chip.priority');
+  if(prioChip){
+    STATE.priorityFilter = prioChip.dataset.priority;
+    $$('#priorityTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.p === STATE.priorityFilter));
+    render();
+    return;
+  }
 });
 
 /* ---------- View toggle ---------- */
@@ -731,13 +861,49 @@ $('#priorityTabs').addEventListener('click', (e)=>{
   render();
 });
 $('#categoryFilter').onchange = (e)=>{ STATE.categoryFilter = e.target.value; render(); };
+$('#accountFilter').onchange = (e)=>{ STATE.accountFilter = e.target.value; render(); };
 $('#platformFilter').onchange = (e)=>{ STATE.platformFilter = e.target.value; render(); };
 $('#searchInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
 
 /* ---------- Add / Edit modal ---------- */
+function renderCategoryChips(){
+  const el = $('#categoryChips');
+  el.innerHTML = STATE.modalCategories.map((c,i)=>`
+    <span class="tag-chip">${escapeHtml(c)}<button type="button" class="tag-remove" data-i="${i}">&times;</button></span>
+  `).join('');
+}
+
+function addCategoriesFromInput(){
+  const input = $('#categoryInput');
+  const raw = input.value.trim();
+  if(!raw) return;
+  raw.split(',').map(s=>s.trim()).filter(Boolean).forEach(v=>{
+    if(!STATE.modalCategories.some(c=>c.toLowerCase() === v.toLowerCase())) STATE.modalCategories.push(v);
+  });
+  input.value = '';
+  renderCategoryChips();
+}
+
+$('#categoryInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' || e.key === ','){
+    e.preventDefault();
+    addCategoriesFromInput();
+  }
+});
+$('#categoryInput').addEventListener('blur', addCategoriesFromInput);
+$('#categoryChips').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tag-remove');
+  if(!btn) return;
+  STATE.modalCategories.splice(Number(btn.dataset.i), 1);
+  renderCategoryChips();
+});
+
 function resetLinkModal(){
   $('#linkUrl').value = '';
-  $('#linkCategories').value = '';
+  STATE.modalCategories = [];
+  $('#categoryInput').value = '';
+  renderCategoryChips();
+  $('#linkAccount').value = '';
   $('#linkNote').value = '';
   $('#detectedPlat').textContent = '';
   setPriorityPick('moyenne');
@@ -773,7 +939,9 @@ function openEditModal(id){
   resetLinkModal();
   STATE.editingId = id;
   $('#linkUrl').value = link.url;
-  $('#linkCategories').value = (link.categories||[]).join(', ');
+  STATE.modalCategories = (link.categories||[]).slice();
+  renderCategoryChips();
+  $('#linkAccount').value = link.account || '';
   $('#linkNote').value = link.note || '';
   setPriorityPick(link.priority);
   $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
@@ -786,7 +954,9 @@ function openEditModal(id){
 $('#saveLinkBtn').onclick = ()=>{
   const url = $('#linkUrl').value.trim();
   if(!url){ toast('Colle un lien avant d\'enregistrer'); return; }
-  const categories = $('#linkCategories').value.split(',').map(s=>s.trim()).filter(Boolean);
+  addCategoriesFromInput(); // catch anything typed but not yet committed as a chip
+  const categories = STATE.modalCategories.slice();
+  const account = $('#linkAccount').value.trim();
   const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
   const note = $('#linkNote').value.trim();
 
@@ -795,6 +965,7 @@ $('#saveLinkBtn').onclick = ()=>{
     link.url = url;
     link.platform = detectPlatform(url);
     link.categories = categories;
+    link.account = account;
     link.priority = priority;
     link.note = note;
   } else {
@@ -803,6 +974,7 @@ $('#saveLinkBtn').onclick = ()=>{
       url,
       platform: detectPlatform(url),
       categories,
+      account,
       priority,
       note,
       addedAt: new Date().toISOString()

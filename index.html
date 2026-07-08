@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Space — Inspiration Hub</title>
+<title>Will — Inspiration Hub</title>
 <style>
   :root{
     --ink:#0f1424;
@@ -50,6 +50,7 @@
     padding:8px 14px; font-size:13.5px; font-weight:600;
   }
   .btn-primary{background:var(--gold); color:#241a05;}
+  #addBtn .label-short{display:none;}
   .btn-primary:hover{filter:brightness(1.08);}
   .btn-ghost{background:transparent; color:#f1efe8; border:1px solid rgba(255,255,255,.25);}
   .btn-ghost:hover{background:rgba(255,255,255,.08);}
@@ -80,6 +81,13 @@
   .tab[data-p="moyenne"].active{background:var(--moyenne); color:#2b1e00;}
   .tab[data-p="faible"].active{background:var(--faible); color:#fff;}
   .tab[data-p="toutes"].active{background:var(--ink); color:#fff;}
+  .tab[data-p="aucune"].active{background:#9aa0ab; color:#fff;}
+  .cat-filter-group{display:flex; flex-direction:column; gap:3px;}
+  .quick-add-tag{
+    background:none; border:none; color:var(--text-dim); font-size:11px; padding:0 2px;
+    text-align:left; text-decoration:underline; cursor:pointer; font-weight:600;
+  }
+  .quick-add-tag:hover{color:var(--text);}
   select, input[type=text], input[type=search], textarea, input[type=password]{
     font-family:var(--font-body); font-size:13.5px; padding:7px 10px;
     border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text);
@@ -100,8 +108,11 @@
     padding:6px 10px; border-radius:8px; font-size:13px;
   }
   .btn-rename-cat:hover{background:#eeeae0;}
-  .filters .spacer{flex:1;}
-  .count-pill{font-size:12px; color:var(--text-dim); font-family:var(--font-mono);}
+  .filters .spacer{flex:1; min-width:8px;}
+  .count-pill{
+    font-size:13px; font-weight:600; color:var(--text-dim); font-family:var(--font-body);
+    flex-shrink:0; white-space:nowrap; margin-right:2px;
+  }
 
   main{padding:20px; max-width:1400px; margin:0 auto;}
 
@@ -133,7 +144,10 @@
   .oembed-card .oembed-meta span{font-size:12px; color:var(--text-dim); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
   .oembed-card.oembed-text{padding:14px; font-size:13px; line-height:1.4;}
   .oembed-card.oembed-text blockquote{margin:0;}
-  .card-meta{padding:10px 12px; border-top:1px solid var(--line);}
+  .card-meta{padding:10px 12px; border-top:1px solid var(--line); cursor:grab;}
+  .card-meta:active{cursor:grabbing;}
+  .card.dragging{opacity:.4;}
+  .card.drag-over{outline:2px dashed var(--gold); outline-offset:-2px;}
   .chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px;}
   .chip{
     font-size:11px; padding:2px 8px; border-radius:20px; background:#eeeae0; color:var(--text-dim);
@@ -143,6 +157,7 @@
   .chip.priority.haute{background:var(--haute);}
   .chip.priority.moyenne{background:var(--moyenne); color:#2b1e00;}
   .chip.priority.faible{background:var(--faible);}
+  .chip.priority.aucune{background:#9aa0ab;}
   .card-note{font-size:12.5px; color:var(--text-dim); margin:4px 0 8px; line-height:1.4;}
   .card-actions{display:flex; gap:4px; justify-content:flex-end;}
   .card-actions button{font-size:12px; padding:5px 8px;}
@@ -194,6 +209,7 @@
   .priority-picker button[data-p="haute"].sel{background:var(--haute); color:#fff;}
   .priority-picker button[data-p="moyenne"].sel{background:var(--moyenne); color:#2b1e00;}
   .priority-picker button[data-p="faible"].sel{background:var(--faible); color:#fff;}
+  .priority-picker button[data-p="aucune"].sel{background:#9aa0ab; color:#fff;}
   .detected-plat{font-size:12px; color:var(--text-dim); margin-top:5px; font-family:var(--font-mono);}
   .tag-input{
     border:1px solid var(--line); border-radius:8px; padding:6px 8px; background:#fff;
@@ -229,15 +245,13 @@
   @media (max-width:640px){
     header.top{padding:12px 0;}
     .top-inner{padding:0 12px; flex-wrap:wrap;}
-    .top-actions{margin-left:0; flex:1 1 auto;}
+    .top-actions{margin-left:0; flex:1 1 auto; justify-content:flex-end;}
+    .view-toggle{display:none;}
     .icon-btn .btn-ico{display:inline-block;}
     .icon-btn .btn-label{display:none;}
     .icon-btn{background:transparent!important; border:none!important; padding:8px;}
-    .view-toggle .icon-btn{opacity:.6;}
-    .view-toggle .icon-btn.active{opacity:1;}
-    .view-toggle{border:none;}
-    .view-toggle button.active{background:transparent; color:#f1efe8;}
-    #addBtn{flex:1 1 100%; order:10; text-align:center;}
+    #addBtn .label-full{display:none;}
+    #addBtn .label-short{display:inline;}
     .filters{padding:10px 12px; position:static;}
     main{padding:12px;}
     .grid{grid-template-columns:1fr;}
@@ -249,7 +263,7 @@
 
 <header class="top">
   <div class="top-inner">
-    <h1><span class="dot"></span>Space</h1>
+    <h1><span class="dot"></span>Will</h1>
     <div class="top-actions">
       <div class="view-toggle">
         <button id="viewGridBtn" class="icon-btn active" title="Grille">
@@ -269,7 +283,7 @@
         <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span class="btn-label">Réglages</span>
       </button>
-      <button class="btn-primary" id="addBtn">+ Ajouter un lien</button>
+      <button class="btn-primary" id="addBtn"><span class="label-full">+ Ajouter un lien</span><span class="label-short">+ Ajouter</span></button>
     </div>
   </div>
 </header>
@@ -281,9 +295,13 @@
       <div class="tab" data-p="haute">Haute</div>
       <div class="tab" data-p="moyenne">Moyenne</div>
       <div class="tab" data-p="faible">Faible</div>
+      <div class="tab" data-p="aucune">Aucune</div>
     </div>
-    <div class="select-wrap">
-      <select id="categoryFilter"><option value="">Catégories</option></select>
+    <div class="cat-filter-group">
+      <div class="select-wrap">
+        <select id="categoryFilter"><option value="">Catégories</option></select>
+      </div>
+      <button class="quick-add-tag" id="quickAddTagBtn" type="button">+ tag</button>
     </div>
     <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
     <input type="search" id="searchInput" placeholder="Rechercher...">
@@ -330,12 +348,17 @@
         <datalist id="categoryList"></datalist>
       </div>
     </div>
+    <div class="field" id="linkAccountField" style="display:none;">
+      <label>Compte (Instagram/Threads ne le détectent pas automatiquement)</label>
+      <input type="text" id="linkAccount" placeholder="ex: japanese_lyrics">
+    </div>
     <div class="field">
       <label>Priorité</label>
       <div class="priority-picker" id="priorityPicker">
         <button type="button" data-p="haute">Haute</button>
         <button type="button" data-p="moyenne" class="sel">Moyenne</button>
         <button type="button" data-p="faible">Faible</button>
+        <button type="button" data-p="aucune">Aucune</button>
       </div>
     </div>
     <div class="field">
@@ -476,20 +499,21 @@ function ghApiUrl(){
 async function loadFromGitHub(){
   const s = getSettings();
   const url = ghApiUrl();
-  if(!url){
-    // no repo configured yet -> fall back to local cache only
-    loadLocalCache();
-    render();
-    return;
-  }
+
+  // Always show whatever we already have locally first, instantly — this
+  // avoids a blank flash while waiting on the network, and (combined with
+  // the diff check below) avoids re-rendering at all when nothing changed.
+  loadLocalCache();
+  render();
+
+  if(!url) return; // no repo configured yet -> local cache is all there is
+
   try{
     const headers = {'Accept':'application/vnd.github+json'};
     if(s.token) headers['Authorization'] = 'Bearer ' + s.token;
     const res = await fetch(url + (s.branch ? `?ref=${s.branch}` : ''), {headers});
     if(res.status === 404){
-      STATE.links = [];
-      STATE.sha = null;
-      render();
+      if(STATE.links.length){ STATE.links = []; STATE.sha = null; render(); }
       return;
     }
     if(!res.ok) throw new Error('GitHub ' + res.status);
@@ -497,16 +521,16 @@ async function loadFromGitHub(){
     STATE.sha = data.sha;
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
     const parsed = JSON.parse(decoded);
-    STATE.links = parsed.links || [];
+    const fetchedLinks = parsed.links || [];
+    const changed = JSON.stringify(fetchedLinks) !== JSON.stringify(STATE.links);
+    STATE.links = fetchedLinks;
     saveLocalCache();
     s.lastSync = Date.now();
     setSettings(s);
-    render();
+    if(changed) render(); // only re-render (and re-trigger embeds) if something actually changed
   } catch(err){
     console.error(err);
     toast('Sync impossible, affichage de la copie locale');
-    loadLocalCache();
-    render();
   }
 }
 
@@ -586,7 +610,9 @@ function normalizeInstagramUrl(url){
   } catch(e){ return url; }
 }
 
-function buildEmbedHTML(link){
+const WORKER_PLATFORMS = ['twitter', 'tiktok', 'instagram', 'threads'];
+
+function nativeFallbackEmbedHTML(link){
   const {platform, url} = link;
   if(platform === 'instagram'){
     const permalink = normalizeInstagramUrl(url);
@@ -595,15 +621,18 @@ function buildEmbedHTML(link){
   if(platform === 'threads'){
     return `<blockquote class="text-post-media" data-text-post-permalink="${url}" style="max-width:100%;"><a href="${url}">${url}</a></blockquote>`;
   }
-  if(platform === 'twitter' || platform === 'tiktok'){
-    // Handled asynchronously via the Worker (see populateOembedSlots) —
-    // this is just the placeholder shown while it loads / as a no-worker fallback.
+  if(platform === 'twitter'){
+    return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;
+  }
+  return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
+}
+
+function buildEmbedHTML(link){
+  const {platform} = link;
+  if(WORKER_PLATFORMS.includes(platform)){
     const s = getSettings();
-    if(!s.workerUrl){
-      if(platform === 'twitter') return `<blockquote class="twitter-tweet"><a href="${url}">${url}</a></blockquote>`;
-      return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
-    }
-    const cached = oembedCache.get(url);
+    if(!s.workerUrl) return nativeFallbackEmbedHTML(link);
+    const cached = oembedCache.get(link.url);
     if(cached && typeof cached.then !== 'function'){
       // Already resolved on a previous render (e.g. before a filter/tab
       // switch) — reuse it immediately instead of flashing "Chargement…"
@@ -613,14 +642,14 @@ function buildEmbedHTML(link){
     return `<div class="oembed-loading">Chargement de la preview…</div>`;
   }
   let domain = '';
-  try{ domain = new URL(url).hostname.replace('www.',''); }catch(e){ domain = url; }
+  try{ domain = new URL(link.url).hostname.replace('www.',''); }catch(e){ domain = link.url; }
   return `<div class="other-preview">
     <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
-    <a href="${url}" target="_blank" rel="noopener">${domain}</a>
+    <a href="${link.url}" target="_blank" rel="noopener">${domain}</a>
   </div>`;
 }
 
-/* ---------- oEmbed via Cloudflare Worker (TikTok / Twitter) ---------- */
+/* ---------- oEmbed / preview via Cloudflare Worker ---------- */
 function fetchOembed(url){
   const s = getSettings();
   if(!s.workerUrl) return Promise.resolve(null);
@@ -650,12 +679,10 @@ function fetchOembed(url){
 
 function renderOembedCard(entry, link){
   if(!entry || entry.status === 'error'){
-    let domain = '';
-    try{ domain = new URL(link.url).hostname.replace('www.',''); }catch(e){ domain = link.url; }
-    return `<div class="other-preview">
-      <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
-      <a href="${link.url}" target="_blank" rel="noopener">Voir sur ${platformLabel(link.platform)}</a>
-    </div>`;
+    // Worker fetch failed (or platform not supported by it) — fall back to
+    // the native embed script instead of a bare link, so the person still
+    // sees something useful.
+    return nativeFallbackEmbedHTML(link);
   }
   const d = entry.data;
   const author = d.author_name ? escapeHtml(d.author_name) : platformLabel(link.platform);
@@ -679,11 +706,11 @@ function populateOembedSlots(items){
   const s = getSettings();
   if(!s.workerUrl) return;
   items.forEach(link=>{
-    if(link.platform !== 'twitter' && link.platform !== 'tiktok') return;
+    if(!WORKER_PLATFORMS.includes(link.platform)) return;
     fetchOembed(link.url).then(entry=>{
       if(entry && entry.status === 'ok' && entry.data && entry.data.author_name && !link.account){
-        // Learn the account name once from oEmbed, so links can be grouped
-        // by creator even though the user didn't type it manually.
+        // Learn the account name once from the Worker's response, so links
+        // can be grouped by creator even though nobody typed it manually.
         link.account = entry.data.author_name;
         saveToGitHub();
         render();
@@ -692,6 +719,7 @@ function populateOembedSlots(items){
       const slot = document.querySelector(`.embed-wrap[data-id="${link.id}"]`);
       if(!slot) return; // card no longer in view (filtered out / re-rendered)
       slot.innerHTML = renderOembedCard(entry, link);
+      reprocessEmbeds([link]); // in case the render fell back to a native blockquote
     });
   });
 }
@@ -709,17 +737,27 @@ function ensureEmbedScript(platform){
 
 function reprocessEmbeds(items){
   const settings = getSettings();
+  // Native embed scripts are only needed as a fallback for platforms/links
+  // the Worker doesn't (yet) cover — i.e. no workerUrl configured at all,
+  // or the Worker returned an error for this specific link.
+  const needsNative = (platform) => {
+    if(!WORKER_PLATFORMS.includes(platform)) return false;
+    if(!settings.workerUrl) return true;
+    return items.some(l => l.platform === platform && (() => {
+      const cached = oembedCache.get(l.url);
+      return cached && typeof cached.then !== 'function' && cached.status === 'error';
+    })());
+  };
   const platformsPresent = new Set(items.map(l=>l.platform));
 
-  if(platformsPresent.has('instagram')){
+  if(platformsPresent.has('instagram') && needsNative('instagram')){
     ensureEmbedScript('instagram');
     // Instagram's embed.js does NOT watch the DOM for new content — it must
     // be told to re-scan explicitly, or blockquotes added after a filter/tab
-    // switch never turn into the actual embed (this was the "embed
-    // disappears when switching tabs" bug).
+    // switch never turn into the actual embed.
     if(window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
   }
-  if(platformsPresent.has('threads')){
+  if(platformsPresent.has('threads') && needsNative('threads')){
     // No documented reprocess API for Threads' embed script — reinserting
     // the tag is the only known way to get it to scan again.
     const old = document.querySelector('script[data-embed-src="threads"]');
@@ -730,23 +768,30 @@ function reprocessEmbeds(items){
     s.dataset.embedSrc = 'threads';
     document.body.appendChild(s);
   }
-  // Twitter/TikTok are rendered via the Worker's static oEmbed card when a
-  // Worker URL is configured, so their live scripts are only needed for the
-  // raw-blockquote fallback path (no Worker configured yet).
-  if(!settings.workerUrl){
-    if(platformsPresent.has('twitter')){
-      ensureEmbedScript('twitter');
-      if(window.twttr && window.twttr.widgets) window.twttr.widgets.load();
-    }
-    if(platformsPresent.has('tiktok')){
-      ensureEmbedScript('tiktok'); // TikTok's script watches the DOM itself
-    }
+  if(platformsPresent.has('twitter') && needsNative('twitter')){
+    ensureEmbedScript('twitter');
+    if(window.twttr && window.twttr.widgets) window.twttr.widgets.load();
+  }
+  if(platformsPresent.has('tiktok') && needsNative('tiktok')){
+    ensureEmbedScript('tiktok'); // TikTok's script watches the DOM itself
   }
 }
 
 /* ---------- Rendering ---------- */
+function getExtraCategories(){
+  try{ return JSON.parse(localStorage.getItem('vault_extra_categories') || '[]'); }
+  catch(e){ return []; }
+}
+function addExtraCategory(name){
+  const extra = getExtraCategories();
+  if(!extra.some(c=>c.toLowerCase() === name.toLowerCase())){
+    extra.push(name);
+    localStorage.setItem('vault_extra_categories', JSON.stringify(extra));
+  }
+}
+
 function allCategories(){
-  const set = new Set();
+  const set = new Set(getExtraCategories());
   STATE.links.forEach(l => (l.categories||[]).forEach(c => set.add(c)));
   return Array.from(set).sort((a,b)=>a.localeCompare(b));
 }
@@ -773,6 +818,14 @@ function refreshCategoryOptions(){
   $('#renameCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
 }
 
+$('#quickAddTagBtn').onclick = ()=>{
+  const name = (prompt('Nom de la nouvelle catégorie :') || '').trim();
+  if(!name) return;
+  addExtraCategory(name);
+  render();
+  toast('Catégorie « ' + name + ' » ajoutée');
+};
+
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -788,7 +841,7 @@ function filteredLinks(){
       if(!hay.includes(q)) return false;
     }
     return true;
-  }).sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
+  }).sort((a,b) => (b.sortOrder ?? new Date(b.addedAt).getTime()) - (a.sortOrder ?? new Date(a.addedAt).getTime()));
 }
 
 function render(){
@@ -796,7 +849,7 @@ function render(){
   persistUIState();
   refreshCategoryOptions();
   const items = filteredLinks();
-  $('#countPill').textContent = items.length + (items.length>1 ? ' liens' : ' lien');
+  $('#countPill').textContent = items.length;
   $('#emptyState').style.display = (STATE.links.length === 0) ? 'block' : 'none';
   $('#gridView').style.display = (STATE.view === 'grid' && STATE.links.length) ? 'grid' : 'none';
   $('#listView').style.display = (STATE.view === 'list' && STATE.links.length) ? 'table' : 'none';
@@ -813,19 +866,23 @@ function capitalize(s){
 }
 
 function chipsHTML(l){
+  const sortedCats = [...(l.categories||[])].sort((a,b)=>a.localeCompare(b));
   return `
     <span class="chip priority ${l.priority}" data-priority="${l.priority}">${capitalize(l.priority)}</span>
     ${l.account ? `<span class="chip acct-chip" data-acct="${escapeHtml(l.account)}">@${escapeHtml(l.account)}</span>` : ''}
-    ${(l.categories||[]).map(c=>`<span class="chip cat-chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</span>`).join('')}
+    ${sortedCats.map(c=>`<span class="chip cat-chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</span>`).join('')}
   `;
 }
 
+let lastGridOrder = []; // ids in the order they were last rendered, top-left first
+
 function renderGrid(items){
+  lastGridOrder = items.map(l=>l.id);
   const grid = $('#gridView');
   grid.innerHTML = items.map(l => `
     <div class="card" data-id="${l.id}">
       <div class="embed-wrap" data-id="${l.id}">${buildEmbedHTML(l)}</div>
-      <div class="card-meta">
+      <div class="card-meta" draggable="true">
         <div class="chips">${chipsHTML(l)}</div>
         ${l.note ? `<div class="card-note">${escapeHtml(l.note)}</div>` : ''}
         <div class="card-actions">
@@ -909,6 +966,66 @@ function syncControls(){
   $('#viewListBtn').classList.toggle('active', STATE.view === 'list');
 }
 
+/* ---------- Drag & drop reordering (desktop grid, grab from the card-meta area) ---------- */
+function reorderLink(draggedId, targetId, insertAfter){
+  const order = lastGridOrder.slice();
+  const fromIdx = order.indexOf(draggedId);
+  if(fromIdx === -1) return;
+  order.splice(fromIdx, 1);
+  let toIdx = order.indexOf(targetId);
+  if(toIdx === -1){
+    order.push(draggedId);
+  } else {
+    if(insertAfter) toIdx += 1;
+    order.splice(toIdx, 0, draggedId);
+  }
+  // order[0] is displayed first (top-left), so it must get the highest
+  // sortOrder since the display sorts by sortOrder descending.
+  const n = order.length;
+  order.forEach((id, i) => {
+    const link = STATE.links.find(l=>l.id===id);
+    if(link) link.sortOrder = n - i;
+  });
+}
+
+let dragSourceId = null;
+
+$('#gridView').addEventListener('dragstart', (e)=>{
+  const handle = e.target.closest('.card-meta');
+  if(!handle){ e.preventDefault(); return; }
+  const card = handle.closest('.card');
+  dragSourceId = card.dataset.id;
+  card.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', dragSourceId);
+});
+
+$('#gridView').addEventListener('dragend', ()=>{
+  $$('.card').forEach(c=>c.classList.remove('dragging', 'drag-over'));
+  dragSourceId = null;
+});
+
+$('#gridView').addEventListener('dragover', (e)=>{
+  if(!dragSourceId) return;
+  e.preventDefault();
+  const card = e.target.closest('.card');
+  if(!card || card.dataset.id === dragSourceId) return;
+  $$('.card').forEach(c=>c.classList.remove('drag-over'));
+  card.classList.add('drag-over');
+});
+
+$('#gridView').addEventListener('drop', (e)=>{
+  e.preventDefault();
+  const card = e.target.closest('.card');
+  if(!card || !dragSourceId || card.dataset.id === dragSourceId) return;
+  const rect = card.getBoundingClientRect();
+  const insertAfter = (e.clientX - rect.left) > rect.width / 2;
+  reorderLink(dragSourceId, card.dataset.id, insertAfter);
+  dragSourceId = null;
+  render();
+  saveToGitHub();
+});
+
 /* ---------- View toggle ---------- */
 $('.view-toggle').addEventListener('click', (e)=>{
   const b = e.target.closest('button');
@@ -976,11 +1093,17 @@ $('#categoryChips').addEventListener('click', (e)=>{
   renderCategoryChips();
 });
 
+function updateAccountFieldVisibility(platform){
+  $('#linkAccountField').style.display = (platform === 'instagram' || platform === 'threads') ? 'block' : 'none';
+}
+
 function resetLinkModal(){
   $('#linkUrl').value = '';
   STATE.modalCategories = [];
   $('#categoryInput').value = '';
   renderCategoryChips();
+  $('#linkAccount').value = '';
+  updateAccountFieldVisibility('');
   $('#linkNote').value = '';
   $('#detectedPlat').textContent = '';
   setPriorityPick('moyenne');
@@ -999,9 +1122,10 @@ $('#cancelLinkBtn').onclick = ()=> $('#linkOverlay').classList.remove('show');
 
 $('#linkUrl').addEventListener('input', ()=>{
   const url = $('#linkUrl').value.trim();
-  if(!url){ $('#detectedPlat').textContent=''; return; }
+  if(!url){ $('#detectedPlat').textContent=''; updateAccountFieldVisibility(''); return; }
   const p = detectPlatform(url);
   $('#detectedPlat').textContent = 'Détecté : ' + platformLabel(p);
+  updateAccountFieldVisibility(p);
 });
 
 $('#priorityPicker').addEventListener('click', (e)=>{
@@ -1018,6 +1142,8 @@ function openEditModal(id){
   $('#linkUrl').value = link.url;
   STATE.modalCategories = (link.categories||[]).slice();
   renderCategoryChips();
+  $('#linkAccount').value = link.account || '';
+  updateAccountFieldVisibility(link.platform);
   $('#linkNote').value = link.note || '';
   setPriorityPick(link.priority);
   $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
@@ -1032,23 +1158,27 @@ $('#saveLinkBtn').onclick = ()=>{
   if(!url){ toast('Colle un lien avant d\'enregistrer'); return; }
   addCategoriesFromInput(); // catch anything typed but not yet committed as a chip
   const categories = STATE.modalCategories.slice();
+  const platform = detectPlatform(url);
+  const manualAccount = $('#linkAccount').value.trim();
   const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
   const note = $('#linkNote').value.trim();
+  const isManualAccountPlatform = (platform === 'instagram' || platform === 'threads');
 
   if(STATE.editingId){
     const link = STATE.links.find(l=>l.id===STATE.editingId);
     link.url = url;
-    link.platform = detectPlatform(url);
+    link.platform = platform;
     link.categories = categories;
     link.priority = priority;
     link.note = note;
+    if(isManualAccountPlatform) link.account = manualAccount;
   } else {
     STATE.links.push({
       id: uid(),
       url,
-      platform: detectPlatform(url),
+      platform,
       categories,
-      account: '',
+      account: isManualAccountPlatform ? manualAccount : '',
       priority,
       note,
       addedAt: new Date().toISOString()

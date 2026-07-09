@@ -185,6 +185,7 @@
     gap:8px; padding:30px 16px; text-align:center;
   }
   .card .other-preview img{width:36px; height:36px; border-radius:8px;}
+  .self-hosted-video{width:100%; max-height:420px; display:block; background:#000;}
   .card .other-preview a{color:var(--ink); font-weight:600; text-decoration:none; font-size:13.5px; word-break:break-all;}
   .oembed-loading{padding:40px 16px; font-size:12.5px; color:var(--text-dim); text-align:center; width:100%;}
   .oembed-card{display:block; width:100%; text-decoration:none; color:var(--text);}
@@ -209,6 +210,11 @@
   .chip.priority.faible{background:var(--faible);}
   .chip.priority.aucune{background:#9aa0ab;}
   .card-note{font-size:12.5px; color:var(--text-dim); margin:4px 0 8px; line-height:1.4;}
+  .source-link{
+    display:inline-block; font-size:11.5px; color:var(--text-dim); text-decoration:none;
+    margin:2px 0 8px;
+  }
+  .source-link:hover{color:var(--text); text-decoration:underline;}
   .card-actions{display:flex; gap:4px; justify-content:flex-end;}
   .card-actions button{font-size:12px; padding:5px 8px;}
 
@@ -436,6 +442,10 @@
         <button type="button" data-p="faible">Faible</button>
         <button type="button" data-p="aucune">Aucune</button>
       </div>
+    </div>
+    <div class="field" id="linkSourceField" style="display:none;">
+      <label>Source (URL)</label>
+      <input type="text" id="linkSource" placeholder="Lien du post d'origine (Insta, etc.) pour y retourner">
     </div>
     <div class="field">
       <label>Note (optionnel)</label>
@@ -703,6 +713,13 @@ function nativeFallbackEmbedHTML(link){
   return `<blockquote class="tiktok-embed" cite="${url}" style="max-width:100%;min-width:280px;"><a href="${url}">${url}</a></blockquote>`;
 }
 
+function isDirectVideoUrl(url){
+  try{
+    const pathname = new URL(url).pathname;
+    return /\.(mp4|webm|mov|m4v|ogg)$/i.test(pathname);
+  } catch(e){ return false; }
+}
+
 function buildEmbedHTML(link){
   const {platform} = link;
   if(platform === 'instagram'){
@@ -722,6 +739,11 @@ function buildEmbedHTML(link){
       return renderOembedCard(cached, link);
     }
     return `<div class="oembed-loading">Chargement de la preview…</div>`;
+  }
+  if(isDirectVideoUrl(link.url)){
+    // A self-hosted video (e.g. re-uploaded because the original Insta/etc.
+    // embed wouldn't load) — play it natively instead of a link-out card.
+    return `<video class="self-hosted-video" src="${link.url}" controls playsinline preload="metadata"></video>`;
   }
   let domain = '';
   try{ domain = new URL(link.url).hostname.replace('www.',''); }catch(e){ domain = link.url; }
@@ -950,6 +972,7 @@ function renderGrid(items){
       <div class="card-meta" draggable="true">
         <div class="chips">${chipsHTML(l)}</div>
         ${l.note ? `<div class="card-note">${escapeHtml(l.note)}</div>` : ''}
+        ${l.source ? `<a class="source-link" href="${l.source}" target="_blank" rel="noopener">🔗 Source d'origine</a>` : ''}
         <div class="card-actions">
           <button class="btn-icon" data-action="edit" data-id="${l.id}">✎ Éditer</button>
         </div>
@@ -973,7 +996,7 @@ function renderList(items){
       <td class="url-cell"><a href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a></td>
       <td>${chipsHTML(l)}</td>
       <td>${new Date(l.addedAt).toLocaleDateString('fr-FR')}</td>
-      <td style="max-width:220px;">${escapeHtml(l.note||'')}</td>
+      <td style="max-width:220px;">${escapeHtml(l.note||'')}${l.source ? ` <a class="source-link" href="${l.source}" target="_blank" rel="noopener">🔗</a>` : ''}</td>
       <td class="row-actions">
         <button class="btn-icon" data-action="edit" data-id="${l.id}">✎</button>
       </td>
@@ -1183,11 +1206,17 @@ $('#categoryChips').addEventListener('click', (e)=>{
   renderCategoryChips();
 });
 
+function updateSourceFieldVisibility(platform){
+  $('#linkSourceField').style.display = (platform === 'other') ? 'block' : 'none';
+}
+
 function resetLinkModal(){
   $('#linkUrl').value = '';
   STATE.modalCategories = [];
   $('#categoryInput').value = '';
   renderCategoryChips();
+  $('#linkSource').value = '';
+  updateSourceFieldVisibility('');
   $('#linkNote').value = '';
   $('#detectedPlat').textContent = '';
   setPriorityPick('moyenne');
@@ -1206,9 +1235,10 @@ $('#cancelLinkBtn').onclick = ()=> $('#linkOverlay').classList.remove('show');
 
 $('#linkUrl').addEventListener('input', ()=>{
   const url = $('#linkUrl').value.trim();
-  if(!url){ $('#detectedPlat').textContent=''; return; }
+  if(!url){ $('#detectedPlat').textContent=''; updateSourceFieldVisibility(''); return; }
   const p = detectPlatform(url);
   $('#detectedPlat').textContent = 'Détecté : ' + platformLabel(p);
+  updateSourceFieldVisibility(p);
 });
 
 $('#priorityPicker').addEventListener('click', (e)=>{
@@ -1225,6 +1255,8 @@ function openEditModal(id){
   $('#linkUrl').value = link.url;
   STATE.modalCategories = (link.categories||[]).slice();
   renderCategoryChips();
+  $('#linkSource').value = link.source || '';
+  updateSourceFieldVisibility(link.platform);
   $('#linkNote').value = link.note || '';
   setPriorityPick(link.priority);
   $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
@@ -1242,6 +1274,7 @@ $('#saveLinkBtn').onclick = ()=>{
   const platform = detectPlatform(url);
   const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
   const note = $('#linkNote').value.trim();
+  const source = (platform === 'other') ? $('#linkSource').value.trim() : '';
 
   if(STATE.editingId){
     const link = STATE.links.find(l=>l.id===STATE.editingId);
@@ -1250,6 +1283,7 @@ $('#saveLinkBtn').onclick = ()=>{
     link.categories = categories;
     link.priority = priority;
     link.note = note;
+    link.source = source;
   } else {
     STATE.links.push({
       id: uid(),
@@ -1257,6 +1291,7 @@ $('#saveLinkBtn').onclick = ()=>{
       platform,
       categories,
       account: '',
+      source,
       priority,
       note,
       addedAt: new Date().toISOString()

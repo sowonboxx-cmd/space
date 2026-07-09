@@ -90,7 +90,7 @@
       "priority": "haute",
       "note": "",
       "addedAt": "2026-07-08T20:07:45.986Z",
-      "sortOrder": 7
+      "sortOrder": 1
     },
     {
       "id": "l_mrcogodi96qlfq",
@@ -169,7 +169,8 @@
       "priority": "haute",
       "note": "Transition Ninja",
       "addedAt": "2026-07-08T23:17:08.609Z",
-      "source": ""
+      "source": "",
+      "sortOrder": 6
     },
     {
       "id": "l_mrcpobh2qm6ab0",
@@ -560,7 +561,8 @@
       "source": "",
       "priority": "moyenne",
       "note": "",
-      "addedAt": "2026-07-09T01:45:54.076Z"
+      "addedAt": "2026-07-09T01:45:54.076Z",
+      "sortOrder": 2
     },
     {
       "id": "l_mrd662ici2a49b",
@@ -844,7 +846,8 @@
       "source": "",
       "priority": "moyenne",
       "note": "Présentation d'un magasin ou autre",
-      "addedAt": "2026-07-09T11:07:47.755Z"
+      "addedAt": "2026-07-09T11:07:47.755Z",
+      "sortOrder": 3
     },
     {
       "id": "l_mrdemhojsfw6ia",
@@ -1747,7 +1750,8 @@
       "source": "",
       "priority": "haute",
       "note": "",
-      "addedAt": "2026-07-09T21:20:54.148Z"
+      "addedAt": "2026-07-09T21:20:54.148Z",
+      "sortOrder": 4
     },
     {
       "id": "l_mre0helxpqjlvc",
@@ -1815,7 +1819,8 @@
       "source": "",
       "priority": "moyenne",
       "note": "",
-      "addedAt": "2026-07-09T21:27:22.821Z"
+      "addedAt": "2026-07-09T21:27:22.821Z",
+      "sortOrder": 5
     },
     {
       "id": "l_mre0si1lldhcn5",
@@ -1829,7 +1834,8 @@
       "source": "",
       "priority": "haute",
       "note": "Ninja",
-      "addedAt": "2026-07-09T21:29:49.401Z"
+      "addedAt": "2026-07-09T21:29:49.401Z",
+      "sortOrder": 7
     }
   ]
 }

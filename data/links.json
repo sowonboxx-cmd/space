@@ -98,12 +98,14 @@
       "platform": "instagram",
       "categories": [
         "Manga",
-        "100%"
+        "100%",
+        "Tutoriel"
       ],
       "account": "",
       "priority": "haute",
       "note": "Mettre le manga de mon choix et tag les auteurs",
-      "addedAt": "2026-07-08T22:56:56.166Z"
+      "addedAt": "2026-07-08T22:56:56.166Z",
+      "source": ""
     },
     {
       "id": "l_mrcoib542c416d",

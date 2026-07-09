@@ -1720,6 +1720,19 @@
       "priority": "haute",
       "note": "Air Walk",
       "addedAt": "2026-07-09T21:19:29.043Z"
+    },
+    {
+      "id": "l_mre0fs7xw12p76",
+      "url": "https://www.instagram.com/reel/C_UveBSIr78/",
+      "platform": "instagram",
+      "categories": [
+        "Danse"
+      ],
+      "account": "",
+      "source": "",
+      "priority": "moyenne",
+      "note": "Air walk",
+      "addedAt": "2026-07-09T21:19:56.061Z"
     }
   ]
 }

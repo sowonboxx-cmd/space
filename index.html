@@ -17,11 +17,34 @@
     --faible:#4f9d69;
     --text:#1c2130;
     --text-dim:#6b7180;
+    --surface2:#ffffff;
+    --chip-bg:#eeeae0;
+    --chip-hover:#e2ddcf;
+    --hover-bg:#faf9f5;
+    --danger-bg:#fbeae9;
     --radius:10px;
     --font-display: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
     --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     --font-mono: 'SF Mono', 'Menlo', 'Consolas', monospace;
   }
+  html.dark{
+    --paper:#14150f;
+    --paper-raised:#1b1d17;
+    --line:#2b2d24;
+    --text:#f1efe6;
+    --text-dim:#93958a;
+    --surface2:#1f221b;
+    --chip-bg:#262920;
+    --chip-hover:#30342a;
+    --hover-bg:#20231c;
+    --danger-bg:#3a2220;
+    --gold:#e0a878;
+    --faible:#6bb587;
+  }
+  html.dark .chip.acct-chip{background:#332d47; color:#c9bdec;}
+  html.dark .chip.acct-chip:hover{background:#3d3656;}
+  html.dark .oembed-loading{background:var(--surface2);}
+  html.dark .card .embed-wrap{background:var(--surface2);}
   *{box-sizing:border-box;}
   body{
     margin:0; background:var(--paper); color:var(--text);
@@ -62,6 +85,34 @@
   .icon-btn{display:inline-flex; align-items:center; gap:6px;}
   .icon-btn .btn-ico{width:16px; height:16px; flex-shrink:0; display:none;}
 
+  .header-search{
+    display:flex; align-items:center; gap:6px;
+    background:transparent; border:1px solid rgba(255,255,255,.25); border-radius:8px;
+    padding:0 10px; color:#f1efe8;
+  }
+  .header-search-ico{width:15px; height:15px; flex-shrink:0; opacity:.8;}
+  .header-search input{
+    background:transparent; border:none; color:#f1efe8; padding:7px 0; font-size:13.5px;
+    width:150px; outline:none;
+  }
+  .header-search input::placeholder{color:rgba(241,239,232,.5);}
+
+  #searchMobileBtn{display:none;}
+
+  .theme-icon{width:18px; height:18px; display:none; object-fit:contain;}
+  #themeToggleBtn .theme-icon-moon{display:inline-block;}
+  html.dark #themeToggleBtn .theme-icon-moon{display:none;}
+  html.dark #themeToggleBtn .theme-icon-sun{display:inline-block;}
+
+  .search-modal-input{
+    display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:8px;
+    padding:8px 12px; color:var(--text-dim);
+  }
+  .search-modal-input svg{width:16px; height:16px; flex-shrink:0;}
+  .search-modal-input input{
+    border:none; outline:none; flex:1; font-size:15px; background:transparent; color:var(--text);
+  }
+
   .filters{
     background:var(--paper-raised); border-bottom:1px solid var(--line);
     padding:10px 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
@@ -74,7 +125,7 @@
   .tabs{display:flex; gap:6px;}
   .tab{
     padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600;
-    background:#eeeae0; color:var(--text-dim); border:1px solid transparent;
+    background:var(--chip-bg); color:var(--text-dim); border:1px solid transparent;
     cursor:pointer;
   }
   .tab[data-p="haute"].active{background:var(--haute); color:#fff;}
@@ -84,14 +135,14 @@
   .tab[data-p="aucune"].active{background:#9aa0ab; color:#fff;}
   select, input[type=text], input[type=search], textarea, input[type=password]{
     font-family:var(--font-body); font-size:13.5px; padding:7px 10px;
-    border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text);
+    border:1px solid var(--line); border-radius:8px; background:var(--surface2); color:var(--text);
   }
   select{cursor:pointer;}
   .select-wrap{position:relative; display:inline-flex;}
   .select-wrap select{
     appearance:none; -webkit-appearance:none; -moz-appearance:none;
     font-size:13px; font-weight:600; padding:6px 28px 6px 14px;
-    border-radius:20px; background:#eeeae0; color:var(--text-dim); border:1px solid transparent;
+    border-radius:20px; background:var(--chip-bg); color:var(--text-dim); border:1px solid transparent;
   }
   .select-wrap::after{
     content:'▾'; position:absolute; right:11px; top:50%; transform:translateY(-50%);
@@ -101,7 +152,7 @@
     background:transparent; border:1px solid var(--line); color:var(--text-dim);
     padding:6px 10px; border-radius:8px; font-size:13px;
   }
-  .btn-rename-cat:hover{background:#eeeae0;}
+  .btn-rename-cat:hover{background:var(--chip-bg);}
   .filters .spacer{flex:1; min-width:8px;}
   .count-pill{
     font-size:13px; font-weight:600; color:var(--text-dim); font-family:var(--font-body);
@@ -120,7 +171,7 @@
     overflow:hidden; display:flex; flex-direction:column;
   }
   .card .embed-wrap{
-    min-height:120px; background:#f0eee7; display:flex; align-items:center; justify-content:center;
+    min-height:120px; background:var(--surface2); display:flex; align-items:center; justify-content:center;
     overflow:hidden; opacity:0; transition:opacity .25s ease;
   }
   .card .embed-wrap.ready{opacity:1;}
@@ -149,7 +200,7 @@
   .card.drag-over{outline:2px dashed var(--gold); outline-offset:-2px;}
   .chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px;}
   .chip{
-    font-size:11px; padding:2px 8px; border-radius:20px; background:#eeeae0; color:var(--text-dim);
+    font-size:11px; padding:2px 8px; border-radius:20px; background:var(--chip-bg); color:var(--text-dim);
     font-weight:600;
   }
   .chip.priority{color:#fff; cursor:pointer;}
@@ -165,10 +216,10 @@
   table{width:100%; border-collapse:collapse; background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
   thead th{
     text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.5px;
-    color:var(--text-dim); padding:10px 12px; border-bottom:1px solid var(--line); background:#f0eee7;
+    color:var(--text-dim); padding:10px 12px; border-bottom:1px solid var(--line); background:var(--surface2);
   }
   tbody td{padding:10px 12px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle;}
-  tbody tr:hover{background:#faf9f5;}
+  tbody tr:hover{background:var(--hover-bg);}
   .plat-badge{display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12.5px;}
   .plat-dot{width:8px; height:8px; border-radius:50%;}
   .plat-instagram{background:linear-gradient(45deg,#f58529,#dd2a7b,#8134af);}
@@ -203,7 +254,7 @@
   .field textarea{resize:vertical; min-height:60px;}
   .priority-picker{display:flex; gap:8px;}
   .priority-picker button{
-    flex:1; background:#eeeae0; color:var(--text-dim); border-radius:8px; padding:8px;
+    flex:1; background:var(--chip-bg); color:var(--text-dim); border-radius:8px; padding:8px;
   }
   .priority-picker button[data-p="haute"].sel{background:var(--haute); color:#fff;}
   .priority-picker button[data-p="moyenne"].sel{background:var(--moyenne); color:#2b1e00;}
@@ -211,12 +262,12 @@
   .priority-picker button[data-p="aucune"].sel{background:#9aa0ab; color:#fff;}
   .detected-plat{font-size:12px; color:var(--text-dim); margin-top:5px; font-family:var(--font-mono);}
   .tag-input{
-    border:1px solid var(--line); border-radius:8px; padding:6px 8px; background:#fff;
+    border:1px solid var(--line); border-radius:8px; padding:6px 8px; background:var(--surface2);
     display:flex; flex-wrap:wrap; gap:6px; align-items:center;
   }
   .tag-chips{display:flex; flex-wrap:wrap; gap:5px;}
   .tag-chip{
-    display:inline-flex; align-items:center; gap:4px; background:#eeeae0; color:var(--text);
+    display:inline-flex; align-items:center; gap:4px; background:var(--chip-bg); color:var(--text);
     font-size:12px; font-weight:600; padding:3px 6px 3px 10px; border-radius:20px;
   }
   .tag-chip .tag-remove{
@@ -226,13 +277,13 @@
   .tag-chip .tag-remove:hover{color:var(--haute);}
   .tag-input input{border:none; outline:none; flex:1; min-width:140px; padding:4px 2px;}
   .chip.cat-chip, .chip.acct-chip{cursor:pointer;}
-  .chip.cat-chip:hover, .chip.acct-chip:hover{background:#e2ddcf;}
+  .chip.cat-chip:hover, .chip.acct-chip:hover{background:var(--chip-hover);}
   .chip.acct-chip{background:#e6e2f5; color:#3d3468;}
   .chip.acct-chip:hover{background:#d9d2f2;}
   .modal-actions{display:flex; justify-content:space-between; gap:8px; margin-top:20px;}
   .modal-actions .right{display:flex; gap:8px;}
-  .btn-danger{background:#fbeae9; color:var(--haute);}
-  .btn-secondary{background:#eeeae0; color:var(--text);}
+  .btn-danger{background:var(--danger-bg); color:var(--haute);}
+  .btn-secondary{background:var(--chip-bg); color:var(--text);}
 
   .sync-note{font-size:11px; color:rgba(255,255,255,.6); font-family:var(--font-mono);}
   .toast{
@@ -246,6 +297,12 @@
     .top-inner{padding:0 12px; flex-wrap:wrap;}
     .top-actions{margin-left:0; flex:1 1 auto; justify-content:flex-end;}
     .view-toggle{display:none;}
+    .header-search{display:none;}
+    #searchMobileBtn{display:inline-flex; order:4;}
+    #refreshBtn{order:1;}
+    #themeToggleBtn{order:2;}
+    #settingsBtn{order:3;}
+    #addBtn{order:5;}
     .icon-btn .btn-ico{display:inline-block;}
     .icon-btn .btn-label{display:none;}
     .icon-btn{background:transparent!important; border:none!important; padding:8px;}
@@ -253,7 +310,6 @@
     #addBtn .label-short{display:inline;}
     .filters{padding:10px 12px; position:static;}
     .tabs{flex:1 1 100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
-    #searchInput{flex:1; min-width:0;}
     .filters .spacer{flex:0; min-width:0;}
     main{padding:12px;}
     .grid{grid-template-columns:1fr;}
@@ -262,6 +318,9 @@
 </style>
 </head>
 <body>
+<script>
+  try{ if(localStorage.getItem('vault_theme') === 'dark') document.documentElement.classList.add('dark'); }catch(e){}
+</script>
 
 <header class="top">
   <div class="top-inner">
@@ -277,6 +336,14 @@
           <span class="btn-label">Liste</span>
         </button>
       </div>
+      <div class="header-search">
+        <svg class="header-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="searchInput" placeholder="Rechercher...">
+      </div>
+      <button class="icon-btn" id="searchMobileBtn" title="Rechercher">
+        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="btn-label">Rechercher</span>
+      </button>
       <button class="btn-ghost icon-btn" id="refreshBtn" title="Recharger depuis GitHub">
         <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
         <span class="btn-label">Sync</span>
@@ -285,10 +352,24 @@
         <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span class="btn-label">Réglages</span>
       </button>
+      <button class="icon-btn" id="themeToggleBtn" title="Changer de thème">
+        <img class="theme-icon theme-icon-moon" src="https://domainerosalina.com/wp-content/uploads/2026/06/icon-moon.png" alt="">
+        <img class="theme-icon theme-icon-sun" src="https://domainerosalina.com/wp-content/uploads/2026/06/icon-sun.png" alt="">
+      </button>
       <button class="btn-primary" id="addBtn"><span class="label-full">+ Ajouter un lien</span><span class="label-short">+ Ajouter</span></button>
     </div>
   </div>
 </header>
+
+<div class="overlay" id="searchOverlay">
+  <div class="modal search-modal">
+    <div class="search-modal-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="searchModalInput" placeholder="Rechercher...">
+    </div>
+    <button class="btn-secondary" id="closeSearchBtn" style="margin-top:14px;width:100%;">Fermer</button>
+  </div>
+</div>
 
 <div class="filters">
   <div class="filters-inner">
@@ -302,8 +383,8 @@
     <div class="select-wrap">
       <select id="categoryFilter"><option value="">Catégories</option></select>
     </div>
+    <button class="btn-rename-cat" id="resetCatBtn" style="display:none;" title="Voir toutes les catégories">✕</button>
     <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
-    <input type="search" id="searchInput" placeholder="Rechercher...">
     <div class="spacer"></div>
     <span class="count-pill" id="countPill"></span>
   </div>
@@ -807,6 +888,7 @@ function refreshCategoryOptions(){
   list.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
 
   $('#renameCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
+  $('#resetCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
 }
 
 function escapeHtml(s){
@@ -949,6 +1031,7 @@ function restoreUIState(){
 
 function syncControls(){
   $('#searchInput').value = STATE.search;
+  $('#searchModalInput').value = STATE.search;
   $$('#priorityTabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.p === STATE.priorityFilter));
   $('#viewGridBtn').classList.toggle('active', STATE.view === 'grid');
   $('#viewListBtn').classList.toggle('active', STATE.view === 'list');
@@ -1031,6 +1114,12 @@ $('#priorityTabs').addEventListener('click', (e)=>{
 });
 $('#categoryFilter').onchange = (e)=>{ STATE.categoryFilter = e.target.value; render(); };
 $('#searchInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
+$('#searchModalInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
+
+$('#resetCatBtn').onclick = ()=>{
+  STATE.categoryFilter = '';
+  render();
+};
 
 $('#renameCatBtn').onclick = ()=>{
   const oldName = STATE.categoryFilter;
@@ -1046,6 +1135,19 @@ $('#renameCatBtn').onclick = ()=>{
   render();
   saveToGitHub();
   toast('Catégorie renommée');
+};
+
+/* ---------- Mobile search modal ---------- */
+$('#searchMobileBtn').onclick = ()=>{
+  $('#searchOverlay').classList.add('show');
+  $('#searchModalInput').focus();
+};
+$('#closeSearchBtn').onclick = ()=> $('#searchOverlay').classList.remove('show');
+
+/* ---------- Theme toggle ---------- */
+$('#themeToggleBtn').onclick = ()=>{
+  const isDark = document.documentElement.classList.toggle('dark');
+  try{ localStorage.setItem('vault_theme', isDark ? 'dark' : 'light'); }catch(e){}
 };
 
 /* ---------- Add / Edit modal ---------- */
@@ -1175,7 +1277,7 @@ $('#deleteLinkBtn').onclick = ()=>{
 };
 
 // close modals on overlay click
-[$('#linkOverlay'), $('#settingsOverlay')].forEach(ov=>{
+[$('#linkOverlay'), $('#settingsOverlay'), $('#searchOverlay')].forEach(ov=>{
   ov.addEventListener('click', (e)=>{ if(e.target === ov) ov.classList.remove('show'); });
 });
 

@@ -564,11 +564,12 @@
       "url": "https://www.instagram.com/p/DX971NIDdzN/?img_index=1",
       "platform": "instagram",
       "categories": [
-        "DA Brand"
+        "DA Brand",
+        "Carrousel"
       ],
       "account": "",
       "source": "",
-      "priority": "moyenne",
+      "priority": "haute",
       "note": "",
       "addedAt": "2026-07-09T07:12:34.356Z"
     },

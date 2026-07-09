@@ -1869,7 +1869,10 @@
       "id": "l_mre146wxstrtmh",
       "url": "https://www.tiktok.com/@ceo_masterpiece/video/7458567062189919493?is_from_webapp=1&sender_device=pc",
       "platform": "tiktok",
-      "categories": [],
+      "categories": [
+        "Effect",
+        "#Hard"
+      ],
       "account": "Mr Kachi Iyeh",
       "source": "",
       "priority": "moyenne",

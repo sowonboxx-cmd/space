@@ -92,8 +92,8 @@
   }
   .header-search-ico{width:15px; height:15px; flex-shrink:0; opacity:.8;}
   .header-search input{
-    background:transparent; border:none; color:#f1efe8; padding:7px 0; font-size:13.5px;
-    width:150px; outline:none;
+    background:transparent !important; border:none !important; color:#f1efe8; padding:7px 0; font-size:13.5px;
+    width:150px; outline:none; -webkit-appearance:none; appearance:none;
   }
   .header-search input::placeholder{color:rgba(241,239,232,.5);}
 
@@ -304,11 +304,11 @@
     .top-actions{margin-left:0; flex:1 1 auto; justify-content:flex-end;}
     .view-toggle{display:none;}
     .header-search{display:none;}
-    #searchMobileBtn{display:inline-flex; order:4;}
+    #searchMobileBtn{display:inline-flex; order:3;}
     #refreshBtn{order:1;}
-    #themeToggleBtn{order:2;}
-    #settingsBtn{order:3;}
-    #addBtn{order:5;}
+    #settingsBtn{order:2;}
+    #addBtn{order:4;}
+    #themeToggleBtn{order:5;}
     .icon-btn .btn-ico{display:inline-block;}
     .icon-btn .btn-label{display:none;}
     .icon-btn{background:transparent!important; border:none!important; padding:8px;}
@@ -358,11 +358,11 @@
         <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span class="btn-label">Réglages</span>
       </button>
-      <button class="icon-btn" id="themeToggleBtn" title="Changer de thème">
+      <button class="btn-primary" id="addBtn"><span class="label-full">+ Ajouter un lien</span><span class="label-short">+ Ajouter</span></button>
+      <button class="btn-ghost icon-btn" id="themeToggleBtn" title="Changer de thème">
         <img class="theme-icon theme-icon-moon" src="https://domainerosalina.com/wp-content/uploads/2026/06/icon-moon.png" alt="">
         <img class="theme-icon theme-icon-sun" src="https://domainerosalina.com/wp-content/uploads/2026/06/icon-sun.png" alt="">
       </button>
-      <button class="btn-primary" id="addBtn"><span class="label-full">+ Ajouter un lien</span><span class="label-short">+ Ajouter</span></button>
     </div>
   </div>
 </header>

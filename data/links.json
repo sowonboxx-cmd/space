@@ -125,12 +125,14 @@
       "url": "https://www.instagram.com/reels/DTQAZiPEtDg/",
       "platform": "instagram",
       "categories": [
-        "Flow"
+        "Transition",
+        "#Mid"
       ],
       "account": "",
       "priority": "moyenne",
       "note": "Présentation de magasin ou marque, ville...",
-      "addedAt": "2026-07-08T23:00:32.564Z"
+      "addedAt": "2026-07-08T23:00:32.564Z",
+      "source": ""
     },
     {
       "id": "l_mrcoma41kwdu6w",

@@ -46,10 +46,12 @@
   html.dark .oembed-loading{background:var(--surface2);}
   html.dark .card .embed-wrap{background:var(--surface2);}
   *{box-sizing:border-box;}
+  html{touch-action:manipulation;}
   body{
     margin:0; background:var(--paper); color:var(--text);
     font-family:var(--font-body);
     min-height:100vh;
+    touch-action:manipulation;
   }
   header.top{
     position:sticky; top:0; z-index:40;
@@ -71,6 +73,7 @@
   button{
     font-family:var(--font-body); cursor:pointer; border:none; border-radius:8px;
     padding:8px 14px; font-size:13.5px; font-weight:600;
+    -webkit-appearance:none; appearance:none;
   }
   .btn-primary{background:var(--gold); color:#241a05;}
   #addBtn .label-short{display:none;}
@@ -116,7 +119,7 @@
   .filters{
     background:var(--paper-raised); border-bottom:1px solid var(--line);
     padding:10px 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-    position:sticky; top:57px; z-index:39;
+    position:sticky; top:var(--header-h, 57px); z-index:39;
   }
   .filters-inner{
     max-width:1400px; margin:0 auto; width:100%;
@@ -336,7 +339,7 @@
     .icon-btn{background:transparent!important; border:none!important; padding:8px;}
     #addBtn .label-full{display:none;}
     #addBtn .label-short{display:inline;}
-    html.dark #addBtn{color:#fff;}
+    html.dark #addBtn{color:#fff !important;}
     .filters{padding:10px 12px; position:static;}
     .tabs{flex:1 1 100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
     .filters .spacer{flex:0; min-width:0;}
@@ -411,7 +414,6 @@
     <div class="select-wrap">
       <select id="categoryFilter"><option value="">Catégories</option></select>
     </div>
-    <button class="btn-rename-cat" id="resetCatBtn" style="display:none;" title="Voir toutes les catégories">✕</button>
     <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
     <div class="spacer"></div>
     <span class="count-pill" id="countPill"></span>
@@ -476,7 +478,7 @@
       </div>
       <div class="collapse-body" id="promptBody" style="display:none;">
         <div class="prompt-toolbar">
-          <button type="button" class="btn-icon" id="copyPromptBtn">📋 Copier</button>
+          <button type="button" class="btn-icon" id="copyPromptBtn">Copier</button>
         </div>
         <textarea id="linkPrompt" placeholder="Colle ton prompt ici..."></textarea>
       </div>
@@ -942,7 +944,6 @@ function refreshCategoryOptions(){
   filterSel.value = STATE.categoryFilter;
 
   $('#renameCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
-  $('#resetCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
 }
 
 function escapeHtml(s){
@@ -1204,11 +1205,6 @@ $('#categoryFilter').onchange = (e)=>{ STATE.categoryFilter = e.target.value; re
 $('#searchInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
 $('#searchModalInput').oninput = (e)=>{ STATE.search = e.target.value; render(); };
 
-$('#resetCatBtn').onclick = ()=>{
-  STATE.categoryFilter = '';
-  render();
-};
-
 $('#homeReset').onclick = ()=>{
   STATE.categoryFilter = '';
   render();
@@ -1451,6 +1447,14 @@ $('#deleteLinkBtn').onclick = ()=>{
 });
 
 /* ---------- Init ---------- */
+function updateHeaderHeightVar(){
+  const header = document.querySelector('header.top');
+  if(!header) return;
+  document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+}
+window.addEventListener('resize', updateHeaderHeightVar);
+updateHeaderHeightVar();
+
 restoreUIState();
 loadFromGitHub();
 

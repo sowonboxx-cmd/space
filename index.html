@@ -92,7 +92,7 @@
   }
   .header-search-ico{width:15px; height:15px; flex-shrink:0; opacity:.8;}
   .header-search input{
-    background:transparent !important; border:none !important; color:#f1efe8; padding:7px 0; font-size:13.5px;
+    background:transparent !important; border:none !important; color:#f1efe8 !important; padding:7px 0; font-size:13.5px;
     width:150px; outline:none; -webkit-appearance:none; appearance:none;
   }
   .header-search input::placeholder{color:rgba(241,239,232,.5);}
@@ -258,6 +258,20 @@
   .field label{display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-dim); margin-bottom:5px;}
   .field input, .field textarea, .field select{width:100%;}
   .field textarea{resize:vertical; min-height:60px;}
+  .collapse-header{
+    display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;
+    font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-dim);
+    padding:4px 0;
+  }
+  .collapse-header:hover{color:var(--text);}
+  .collapse-arrow{display:inline-block; transition:transform .15s ease; font-size:10px;}
+  .collapse-arrow.open{transform:rotate(90deg);}
+  .collapse-body{margin-top:8px;}
+  .prompt-toolbar{display:flex; justify-content:flex-end; margin-bottom:6px;}
+  .prompt-toolbar .btn-icon{
+    background:var(--chip-bg); border-radius:8px; font-size:12px; padding:5px 10px;
+  }
+  .prompt-toolbar .btn-icon:hover{background:var(--chip-hover);}
   .priority-picker{display:flex; gap:8px;}
   .priority-picker button{
     flex:1; background:var(--chip-bg); color:var(--text-dim); border-radius:8px; padding:8px;
@@ -282,6 +296,14 @@
   }
   .tag-chip .tag-remove:hover{color:var(--haute);}
   .tag-input input{border:none; outline:none; flex:1; min-width:140px; padding:4px 2px;}
+  .cat-dropdown-list{
+    position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:50;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:8px;
+    max-height:180px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,.15);
+  }
+  .cat-dropdown-option{padding:8px 12px; font-size:13.5px; cursor:pointer; color:var(--text);}
+  .cat-dropdown-option:hover{background:var(--chip-bg);}
+  .cat-dropdown-empty{padding:8px 12px; font-size:12px; color:var(--text-dim);}
   .chip.cat-chip, .chip.acct-chip{cursor:pointer;}
   .chip.cat-chip:hover, .chip.acct-chip:hover{background:var(--chip-hover);}
   .chip.acct-chip{background:#e6e2f5; color:#3d3468;}
@@ -314,6 +336,7 @@
     .icon-btn{background:transparent!important; border:none!important; padding:8px;}
     #addBtn .label-full{display:none;}
     #addBtn .label-short{display:inline;}
+    html.dark #addBtn{color:#fff;}
     .filters{padding:10px 12px; position:static;}
     .tabs{flex:1 1 100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
     .filters .spacer{flex:0; min-width:0;}
@@ -330,7 +353,7 @@
 
 <header class="top">
   <div class="top-inner">
-    <h1><span class="dot"></span>天才</h1>
+    <h1 id="homeReset" style="cursor:pointer;"><span class="dot"></span>天才</h1>
     <div class="top-actions">
       <div class="view-toggle">
         <button id="viewGridBtn" class="icon-btn active" title="Grille">
@@ -414,6 +437,7 @@
     <h2>Ton space est vide</h2>
     <p>Colle ton premier lien Instagram, X, TikTok ou Threads pour commencer.</p>
   </div>
+  <div id="loadMoreSentinel" style="display:none; align-items:center; justify-content:center; height:50px; color:var(--text-dim); font-size:12.5px;">Chargement de plus de liens…</div>
 </main>
 
 <!-- Add/Edit modal -->
@@ -427,10 +451,10 @@
     </div>
     <div class="field">
       <label>Catégories</label>
-      <div class="tag-input" id="categoryTagInput">
+      <div class="tag-input" id="categoryTagInput" style="position:relative;">
         <div class="tag-chips" id="categoryChips"></div>
-        <input type="text" id="categoryInput" list="categoryList" placeholder="Ajouter une catégorie, Entrée pour valider">
-        <datalist id="categoryList"></datalist>
+        <input type="text" id="categoryInput" placeholder="Cliquer pour choisir, ou taper pour créer">
+        <div class="cat-dropdown-list" id="categoryDropdownList" style="display:none;"></div>
       </div>
     </div>
     <div class="field">
@@ -445,6 +469,17 @@
     <div class="field" id="linkSourceField" style="display:none;">
       <label>Source (URL)</label>
       <input type="text" id="linkSource" placeholder="Lien du post d'origine (Insta, etc.) pour y retourner">
+    </div>
+    <div class="field">
+      <div class="collapse-header" id="promptHeader">
+        <span class="collapse-arrow" id="promptArrow">▸</span> Prompt
+      </div>
+      <div class="collapse-body" id="promptBody" style="display:none;">
+        <div class="prompt-toolbar">
+          <button type="button" class="btn-icon" id="copyPromptBtn">📋 Copier</button>
+        </div>
+        <textarea id="linkPrompt" placeholder="Colle ton prompt ici..."></textarea>
+      </div>
     </div>
     <div class="field">
       <label>Note (optionnel)</label>
@@ -522,7 +557,8 @@ let STATE = {
   platformFilter: '',
   search: '',
   editingId: null,
-  modalCategories: []
+  modalCategories: [],
+  visibleCount: 24
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -905,9 +941,6 @@ function refreshCategoryOptions(){
     cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   filterSel.value = STATE.categoryFilter;
 
-  const list = $('#categoryList');
-  list.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
-
   $('#renameCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
   $('#resetCatBtn').style.display = STATE.categoryFilter ? 'inline-block' : 'none';
 }
@@ -930,21 +963,54 @@ function filteredLinks(){
   }).sort((a,b) => (b.sortOrder ?? new Date(b.addedAt).getTime()) - (a.sortOrder ?? new Date(a.addedAt).getTime()));
 }
 
+const PAGE_SIZE = 24;
+let lastFilterSignature = null;
+let loadMoreObserver = null;
+
+function filterSignature(){
+  return [STATE.priorityFilter, STATE.categoryFilter, STATE.accountFilter, STATE.search, STATE.view].join('|');
+}
+
+function setupLazyLoadSentinel(hasMore){
+  const sentinel = $('#loadMoreSentinel');
+  if(loadMoreObserver){ loadMoreObserver.disconnect(); loadMoreObserver = null; }
+  sentinel.style.display = hasMore ? 'flex' : 'none';
+  if(!hasMore) return;
+  loadMoreObserver = new IntersectionObserver((entries)=>{
+    if(entries[0].isIntersecting){
+      STATE.visibleCount += PAGE_SIZE;
+      render();
+    }
+  }, { rootMargin: '400px' });
+  loadMoreObserver.observe(sentinel);
+}
+
 function render(){
   syncControls();
   persistUIState();
   refreshCategoryOptions();
+
+  const sig = filterSignature();
+  if(sig !== lastFilterSignature){
+    STATE.visibleCount = PAGE_SIZE; // filters/view changed -> back to the first page
+    lastFilterSignature = sig;
+  }
+
   const items = filteredLinks();
   $('#countPill').textContent = items.length;
   $('#emptyState').style.display = (STATE.links.length === 0) ? 'block' : 'none';
   $('#gridView').style.display = (STATE.view === 'grid' && STATE.links.length) ? 'grid' : 'none';
   $('#listView').style.display = (STATE.view === 'list' && STATE.links.length) ? 'table' : 'none';
 
+  const visibleItems = items.slice(0, STATE.visibleCount);
+
   if(STATE.view === 'grid'){
-    renderGrid(items);
+    renderGrid(visibleItems);
   } else {
-    renderList(items);
+    renderList(visibleItems);
   }
+
+  setupLazyLoadSentinel(items.length > visibleItems.length);
 }
 
 function capitalize(s){
@@ -1143,6 +1209,11 @@ $('#resetCatBtn').onclick = ()=>{
   render();
 };
 
+$('#homeReset').onclick = ()=>{
+  STATE.categoryFilter = '';
+  render();
+};
+
 $('#renameCatBtn').onclick = ()=>{
   const oldName = STATE.categoryFilter;
   if(!oldName) return;
@@ -1188,7 +1259,47 @@ function addCategoriesFromInput(){
   });
   input.value = '';
   renderCategoryChips();
+  renderCategoryDropdownOptions();
 }
+
+function renderCategoryDropdownOptions(){
+  const typed = $('#categoryInput').value.trim().toLowerCase();
+  const available = allCategories().filter(c =>
+    !STATE.modalCategories.some(mc => mc.toLowerCase() === c.toLowerCase()) &&
+    (!typed || c.toLowerCase().includes(typed))
+  );
+  const list = $('#categoryDropdownList');
+  if(available.length === 0){
+    list.innerHTML = '<div class="cat-dropdown-empty">Aucune catégorie existante — tape puis Entrée pour en créer une</div>';
+    return;
+  }
+  list.innerHTML = available.map(c => `<div class="cat-dropdown-option" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</div>`).join('');
+}
+
+$('#categoryInput').addEventListener('focus', ()=>{
+  renderCategoryDropdownOptions();
+  $('#categoryDropdownList').style.display = 'block';
+});
+$('#categoryInput').addEventListener('input', ()=>{
+  renderCategoryDropdownOptions();
+  $('#categoryDropdownList').style.display = 'block';
+});
+$('#categoryDropdownList').addEventListener('click', (e)=>{
+  const opt = e.target.closest('.cat-dropdown-option');
+  if(!opt) return;
+  const cat = opt.dataset.cat;
+  if(!STATE.modalCategories.some(c=>c.toLowerCase()===cat.toLowerCase())) STATE.modalCategories.push(cat);
+  $('#categoryInput').value = '';
+  renderCategoryChips();
+  // Deferred: rewriting the dropdown's innerHTML synchronously here would
+  // detach the very node this click event is still bubbling through,
+  // breaking the document-level "click outside closes it" check below
+  // (it would see a detached node and think the click was "outside").
+  setTimeout(renderCategoryDropdownOptions, 0);
+});
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('#categoryTagInput')) $('#categoryDropdownList').style.display = 'none';
+});
 
 $('#categoryInput').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter' || e.key === ','){
@@ -1210,11 +1321,14 @@ function updateSourceFieldVisibility(platform){
 
 function resetLinkModal(){
   $('#linkUrl').value = '';
-  STATE.modalCategories = [];
+  STATE.modalCategories = STATE.categoryFilter ? [STATE.categoryFilter] : [];
   $('#categoryInput').value = '';
   renderCategoryChips();
   $('#linkSource').value = '';
   updateSourceFieldVisibility('');
+  $('#linkPrompt').value = '';
+  $('#promptBody').style.display = 'none';
+  $('#promptArrow').classList.remove('open');
   $('#linkNote').value = '';
   $('#detectedPlat').textContent = '';
   setPriorityPick('moyenne');
@@ -1230,6 +1344,24 @@ function setPriorityPick(p){
 
 $('#addBtn').onclick = ()=>{ resetLinkModal(); $('#linkOverlay').classList.add('show'); };
 $('#cancelLinkBtn').onclick = ()=> $('#linkOverlay').classList.remove('show');
+
+$('#promptHeader').onclick = ()=>{
+  const open = $('#promptBody').style.display !== 'none';
+  $('#promptBody').style.display = open ? 'none' : 'block';
+  $('#promptArrow').classList.toggle('open', !open);
+};
+
+$('#copyPromptBtn').onclick = async (e)=>{
+  e.stopPropagation();
+  const text = $('#linkPrompt').value;
+  if(!text){ toast('Rien à copier'); return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Prompt copié');
+  } catch(err){
+    toast('Impossible de copier');
+  }
+};
 
 $('#linkUrl').addEventListener('input', ()=>{
   const url = $('#linkUrl').value.trim();
@@ -1255,6 +1387,7 @@ function openEditModal(id){
   renderCategoryChips();
   $('#linkSource').value = link.source || '';
   updateSourceFieldVisibility(link.platform);
+  $('#linkPrompt').value = link.prompt || ''; // always starts collapsed regardless
   $('#linkNote').value = link.note || '';
   setPriorityPick(link.priority);
   $('#detectedPlat').textContent = 'Plateforme : ' + platformLabel(link.platform);
@@ -1272,6 +1405,7 @@ $('#saveLinkBtn').onclick = ()=>{
   const platform = detectPlatform(url);
   const priority = $('#priorityPicker').querySelector('.sel').dataset.p;
   const note = $('#linkNote').value.trim();
+  const prompt_ = $('#linkPrompt').value;
   const source = (platform === 'other') ? $('#linkSource').value.trim() : '';
 
   if(STATE.editingId){
@@ -1281,6 +1415,7 @@ $('#saveLinkBtn').onclick = ()=>{
     link.categories = categories;
     link.priority = priority;
     link.note = note;
+    link.prompt = prompt_;
     link.source = source;
   } else {
     STATE.links.push({
@@ -1290,6 +1425,7 @@ $('#saveLinkBtn').onclick = ()=>{
       categories,
       account: '',
       source,
+      prompt: prompt_,
       priority,
       note,
       addedAt: new Date().toISOString()

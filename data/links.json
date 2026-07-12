@@ -637,13 +637,15 @@
         "#Mid",
         "Video",
         "Intro",
-        "Flow"
+        "Flow",
+        "Effect : Capcut"
       ],
       "account": "",
       "source": "",
       "priority": "moyenne",
       "note": "",
-      "addedAt": "2026-07-09T10:23:58.779Z"
+      "addedAt": "2026-07-09T10:23:58.779Z",
+      "prompt": ""
     },
     {
       "id": "l_mrdd19kq9cteu4",

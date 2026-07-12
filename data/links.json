@@ -1897,13 +1897,15 @@
         "PVPP",
         "Flow",
         "Transition",
-        "Tutoriel"
+        "Tutoriel",
+        "Will"
       ],
       "account": "",
       "source": "",
       "priority": "moyenne",
       "note": "",
-      "addedAt": "2026-07-09T21:43:37.638Z"
+      "addedAt": "2026-07-09T21:43:37.638Z",
+      "prompt": ""
     },
     {
       "id": "l_mre1g6o0032q6i",

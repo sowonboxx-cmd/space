@@ -212,8 +212,9 @@
   .chip.priority.moyenne{background:var(--moyenne); color:#2b1e00;}
   .chip.priority.faible{background:var(--faible);}
   .chip.priority.aucune{background:#9aa0ab;}
+  .chip.quality{color:#fff;}
   .chip.quality.high{background:var(--faible);}
-  .chip.quality.mid{background:var(--moyenne); color:#2b1e00;}
+  .chip.quality.mid{background:var(--moyenne);}
   .chip.quality.low{background:var(--haute);}
   .card-note{font-size:12.5px; color:var(--text-dim); margin:4px 0 8px; line-height:1.4;}
   .source-link{
@@ -232,6 +233,7 @@
   }
   tbody td{padding:10px 12px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle;}
   tbody tr:hover{background:var(--hover-bg);}
+  #accountsListBody tr{cursor:pointer;}
   .plat-badge{display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12.5px;}
   .plat-dot{width:8px; height:8px; border-radius:50%;}
   .plat-instagram{background:linear-gradient(45deg,#f58529,#dd2a7b,#8134af);}
@@ -289,7 +291,7 @@
   .priority-picker button[data-p="faible"].sel{background:var(--faible); color:#fff;}
   .priority-picker button[data-p="aucune"].sel{background:#9aa0ab; color:#fff;}
   .priority-picker button[data-q="high"].sel{background:var(--faible); color:#fff;}
-  .priority-picker button[data-q="mid"].sel{background:var(--moyenne); color:#2b1e00;}
+  .priority-picker button[data-q="mid"].sel{background:var(--moyenne); color:#fff;}
   .priority-picker button[data-q="low"].sel{background:var(--haute); color:#fff;}
   .detected-plat{font-size:12px; color:var(--text-dim); margin-top:5px; font-family:var(--font-mono);}
   .tag-input{
@@ -355,6 +357,10 @@
     main{padding:12px;}
     .grid{grid-template-columns:1fr;}
     input, select, textarea{font-size:16px;}
+    #accountsListView th:nth-child(4), #accountsListView td:nth-child(4){display:none;}
+    #accountsListView{table-layout:fixed; width:100%;}
+    #accountsListView th, #accountsListView td{padding:8px 6px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    #accountsListView .chip{font-size:10.5px; padding:2px 7px;}
   }
 </style>
 </head>
@@ -472,7 +478,6 @@
         <th>Catégorie</th>
         <th>Qualité</th>
         <th>Note</th>
-        <th></th>
       </tr>
     </thead>
     <tbody id="accountsListBody"></tbody>
@@ -1105,7 +1110,13 @@ function filteredAccounts(){
   return STATE.accounts.filter(a=>{
     if(STATE.accountCategoryFilter && !(a.categories||[]).includes(STATE.accountCategoryFilter)) return false;
     return true;
-  }).sort((a,b) => (b.sortOrder ?? new Date(b.addedAt).getTime()) - (a.sortOrder ?? new Date(a.addedAt).getTime()));
+  }).sort((a,b) => {
+    const nameA = (a.name || '').toLowerCase();
+    const nameB = (b.name || '').toLowerCase();
+    const cmp = nameA.localeCompare(nameB);
+    if(cmp !== 0) return cmp;
+    return new Date(a.addedAt) - new Date(b.addedAt);
+  });
 }
 
 function accountCategoryChipsHTML(a){
@@ -1116,12 +1127,11 @@ function accountCategoryChipsHTML(a){
 function renderAccountsList(items){
   const body = $('#accountsListBody');
   body.innerHTML = items.map(a => `
-    <tr data-id="${a.id}">
+    <tr data-id="${a.id}" class="account-row">
       <td><a href="${a.url}" target="_blank" rel="noopener" class="account-name-link">${escapeHtml(a.name || '(sans nom)')}</a></td>
       <td>${accountCategoryChipsHTML(a)}</td>
       <td><span class="chip quality ${a.quality}">${capitalize(a.quality)}</span></td>
-      <td style="max-width:280px;">${escapeHtml(a.note||'')}</td>
-      <td class="row-actions"><button class="btn-icon" data-action="edit-account" data-id="${a.id}">✎</button></td>
+      <td class="note-cell" style="max-width:280px;">${escapeHtml(a.note||'')}</td>
     </tr>
   `).join('');
 }
@@ -1268,9 +1278,6 @@ function renderList(items){
 }
 
 document.addEventListener('click', (e)=>{
-  const editAcctBtn = e.target.closest('[data-action="edit-account"]');
-  if(editAcctBtn){ openEditAccountModal(editAcctBtn.dataset.id); return; }
-
   const btn = e.target.closest('[data-action="edit"]');
   if(btn){ openEditModal(btn.dataset.id); return; }
 
@@ -1297,6 +1304,15 @@ document.addEventListener('click', (e)=>{
   if(prioChip){
     STATE.priorityFilter = prioChip.dataset.priority;
     render();
+    return;
+  }
+
+  // Clicking anywhere else on an account row opens its edit modal — except
+  // on the account name link (navigates instead), the quality chip, or the
+  // note text, which stay inert so they don't fight with the row click.
+  const acctRow = e.target.closest('#accountsListBody tr[data-id]');
+  if(acctRow && !e.target.closest('.account-name-link, .chip.quality, .note-cell')){
+    openEditAccountModal(acctRow.dataset.id);
     return;
   }
 });

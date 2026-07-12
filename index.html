@@ -361,6 +361,9 @@
     #accountsListView{table-layout:fixed; width:100%;}
     #accountsListView th, #accountsListView td{padding:8px 6px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
     #accountsListView .chip{font-size:10.5px; padding:2px 7px;}
+    #accountsListView th:nth-child(1), #accountsListView td:nth-child(1){width:44%;}
+    #accountsListView th:nth-child(2), #accountsListView td:nth-child(2){width:auto;}
+    #accountsListView th:nth-child(3), #accountsListView td:nth-child(3){width:58px; text-align:right;}
   }
 </style>
 </head>
@@ -653,6 +656,7 @@ let STATE = {
   modalCategories: [],
   visibleCount: 24,
   accountCategoryFilter: '',
+  accountQualityFilter: '',
   accountModalCategories: [],
   editingAccountId: null
 };
@@ -1109,6 +1113,7 @@ function refreshAccountCategoryOptions(){
 function filteredAccounts(){
   return STATE.accounts.filter(a=>{
     if(STATE.accountCategoryFilter && !(a.categories||[]).includes(STATE.accountCategoryFilter)) return false;
+    if(STATE.accountQualityFilter && a.quality !== STATE.accountQualityFilter) return false;
     return true;
   }).sort((a,b) => {
     const nameA = (a.name || '').toLowerCase();
@@ -1303,6 +1308,13 @@ document.addEventListener('click', (e)=>{
   const prioChip = e.target.closest('.chip.priority');
   if(prioChip){
     STATE.priorityFilter = prioChip.dataset.priority;
+    render();
+    return;
+  }
+  const qualityChip = e.target.closest('#accountsListBody .chip.quality');
+  if(qualityChip){
+    const val = qualityChip.classList.contains('high') ? 'high' : qualityChip.classList.contains('mid') ? 'mid' : 'low';
+    STATE.accountQualityFilter = (STATE.accountQualityFilter === val) ? '' : val;
     render();
     return;
   }

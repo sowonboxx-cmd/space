@@ -32,14 +32,16 @@
       "platform": "instagram",
       "categories": [
         "Aura",
-        "#Hard"
+        "#Hard",
+        "Will"
       ],
       "account": "",
       "priority": "moyenne",
       "note": "Flash effect, clone, promo vêtements",
       "addedAt": "2026-07-08T15:51:28.821Z",
       "sortOrder": 4,
-      "source": ""
+      "source": "",
+      "prompt": ""
     },
     {
       "id": "l_mrc9qr1e7z6uo2",

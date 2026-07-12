@@ -2482,13 +2482,15 @@
       "url": "https://www.instagram.com/reels/DYAClPJSjMy/",
       "platform": "instagram",
       "categories": [
-        "mode"
+        "mode",
+        "Model & Perso"
       ],
       "account": "",
       "source": "",
       "priority": "moyenne",
       "note": "Selfie",
-      "addedAt": "2026-07-10T16:02:28.793Z"
+      "addedAt": "2026-07-10T16:02:28.793Z",
+      "prompt": ""
     },
     {
       "id": "l_mrf4k44owjkg7h",

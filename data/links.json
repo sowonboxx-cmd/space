@@ -3239,5 +3239,18 @@
       "addedAt": "2026-07-12T14:48:51.785Z",
       "sortOrder": 6
     }
+  ],
+  "accounts": [
+    {
+      "id": "l_mrhxmfyqfbzkfl",
+      "url": "https://www.instagram.com/deyfilmit/",
+      "name": "deyfilmit",
+      "categories": [
+        "Video Edit"
+      ],
+      "quality": "low",
+      "note": "",
+      "addedAt": "2026-07-12T15:12:12.626Z"
+    }
   ]
 }

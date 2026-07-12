@@ -2597,13 +2597,15 @@
       "platform": "instagram",
       "categories": [
         "Food",
-        "Ads"
+        "Ads",
+        "Food - Pub restaurant"
       ],
       "account": "",
       "source": "",
       "priority": "moyenne",
       "note": "",
-      "addedAt": "2026-07-11T14:39:09.903Z"
+      "addedAt": "2026-07-11T14:39:09.903Z",
+      "prompt": ""
     },
     {
       "id": "l_mrgil3mo5lik7j",

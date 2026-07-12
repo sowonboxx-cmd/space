@@ -1764,13 +1764,15 @@
       "url": "https://www.instagram.com/reels/DL-ORIzPMet/",
       "platform": "instagram",
       "categories": [
-        "Aura"
+        "Aura",
+        "Will"
       ],
       "account": "",
       "source": "",
       "priority": "moyenne",
       "note": "",
-      "addedAt": "2026-07-09T21:21:11.733Z"
+      "addedAt": "2026-07-09T21:21:11.733Z",
+      "prompt": ""
     },
     {
       "id": "l_mre0i50vutxjq6",

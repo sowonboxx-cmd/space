@@ -4695,6 +4695,21 @@
       "priority": "moyenne",
       "note": "Pub site web ou autres, très. réatif",
       "addedAt": "2026-07-21T10:21:08.005Z"
+    },
+    {
+      "id": "l_mrujfs1jrknyr2",
+      "url": "https://www.instagram.com/reel/DYSFy3UDFG0/?igsh=MWQ4anBhM205ZGgzdw==",
+      "platform": "instagram",
+      "categories": [
+        "Food",
+        "Food - Trend"
+      ],
+      "account": "",
+      "source": "",
+      "prompt": "",
+      "priority": "moyenne",
+      "note": "",
+      "addedAt": "2026-07-21T10:56:07.351Z"
     }
   ],
   "accounts": [

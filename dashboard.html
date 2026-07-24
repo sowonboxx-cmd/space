@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" id="theme-color-meta" content="#EEF1EC">
 <title>Ultimate Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -339,6 +340,12 @@
     border: none; cursor: pointer; transition: background .12s ease, color .12s ease;
   }
   .date-tabs .dt.overdue { color: var(--danger); }
+  #app-mobile .date-tabs { flex-wrap: nowrap; }
+  #app-mobile .date-tabs .dt {
+    flex: 0 0 20%; flex-shrink: 0; text-align: center;
+    padding-left: 6px; padding-right: 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   .date-tabs .dt.active {
     background: var(--card); color: var(--ink); font-weight: 700;
   }
@@ -449,7 +456,8 @@
     border-right: 1px solid var(--line-soft);
   }
   .project-block:last-child { border-right: none; }
-  .project-block { cursor: pointer; }
+  .project-block { cursor: pointer; transition: background .12s ease; }
+  .project-block.active-filter { background: var(--bg); }
   .task-row.filtered-out { display: none; }
   .pk-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .pk-kanji {
@@ -714,18 +722,9 @@
     position: relative; width: 100%; max-width: 560px; margin: 0 auto;
     border: none; border-radius: 0; box-shadow: none;
     min-height: 100vh; background: var(--bg);
-    display: flex; flex-direction: column;
   }
-  #app-mobile .m-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  #app-mobile .m-hello, #app-mobile .project-strip { flex-shrink: 0; }
-  #app-mobile .panel:last-child {
-    flex: 1; display: flex; flex-direction: column; min-height: 0;
-  }
-  #app-mobile .panel:last-child .m-section-title,
-  #app-mobile .panel:last-child .date-tabs { flex-shrink: 0; }
   #app-mobile .m-tasks.is-active {
-    display: flex; flex-direction: column;
-    flex: 1; min-height: 0; max-height: none; overflow-y: auto;
+    max-height: calc(100vh - 360px); min-height: 160px; overflow-y: auto;
   }
   #app-mobile .tabbar {
     position: fixed; left: 50%; right: auto; bottom: 20px;
@@ -1516,10 +1515,12 @@
 <script>
   const MOON_PATH = 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';
   const SUN_PATH = 'M12 4V2M12 22v-2M4.93 4.93L3.51 3.51M20.49 20.49l-1.42-1.42M4 12H2M22 12h-2M4.93 19.07l-1.42 1.42M20.49 3.51l-1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z';
+  const themeColorMeta = document.getElementById('theme-color-meta');
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     document.querySelectorAll('[data-theme-icon] svg path').forEach(p => p.setAttribute('d', t === 'light' ? MOON_PATH : SUN_PATH));
     document.querySelectorAll('[data-theme-label]').forEach(el => el.textContent = t === 'light' ? 'Mode sombre' : 'Mode clair');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', t === 'light' ? '#EEF1EC' : '#14171A');
   }
   document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1825,12 +1826,23 @@
       t = setTimeout(() => el.classList.remove('is-scrolling'), 700);
     });
   });
-  // clicking a project block filters the task lists to that project's tasks
+  // clicking a project block filters the task lists to that project's tasks;
+  // clicking the same (active) block again resets the filter
   document.querySelectorAll('.project-block').forEach(block => {
     block.addEventListener('click', () => {
-      const project = block.dataset.project;
       const phone = block.closest('.phone') || block.closest('.desktop-frame');
       if (!phone) return;
+      const wasActive = block.classList.contains('active-filter');
+      phone.querySelectorAll('.project-block').forEach(b => b.classList.remove('active-filter'));
+
+      if (wasActive) {
+        phone.querySelectorAll('.task-row[data-project]').forEach(row => row.classList.remove('filtered-out'));
+        phone.querySelector('[data-reset-filter]')?.classList.remove('visible');
+        return;
+      }
+
+      block.classList.add('active-filter');
+      const project = block.dataset.project;
       phone.querySelectorAll('.task-row[data-project]').forEach(row => {
         row.classList.toggle('filtered-out', row.dataset.project !== project);
       });
@@ -1843,6 +1855,7 @@
       const phone = btn.closest('.phone') || btn.closest('.desktop-frame');
       if (!phone) return;
       phone.querySelectorAll('.task-row[data-project]').forEach(row => row.classList.remove('filtered-out'));
+      phone.querySelectorAll('.project-block').forEach(b => b.classList.remove('active-filter'));
       btn.classList.remove('visible');
     });
   });

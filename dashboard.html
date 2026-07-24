@@ -491,7 +491,8 @@
   .bar span { display: block; height: 100%; border-radius: 3px; }
   .m-venture .vdesc { color: var(--muted); font-size: 11px; margin-top: 7px; }
 
-  .task-list, .m-tasks { max-height: 300px; overflow-y: auto; padding-right: 10px; padding-left: 8px; margin-left: -8px; }
+  .task-list, .m-tasks { overflow-y: auto; padding-right: 10px; padding-left: 8px; margin-left: -8px; }
+  #app-desktop .task-list { max-height: calc(100vh - 300px); }
   .task-list::-webkit-scrollbar, .m-tasks::-webkit-scrollbar { width: 5px; }
   .task-list::-webkit-scrollbar-thumb, .m-tasks::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
   .task-list:hover::-webkit-scrollbar-thumb, .m-tasks:hover::-webkit-scrollbar-thumb,
@@ -730,11 +731,11 @@
   }
   #app-mobile .m-hello, #app-mobile .project-strip { flex-shrink: 0; }
   #app-mobile .panel:last-child {
-    flex-shrink: 0; margin-top: auto; margin-bottom: auto;
+    flex-shrink: 0;
     display: flex; flex-direction: column;
   }
   #app-mobile .m-tasks.is-active {
-    max-height: 320px; overflow-y: auto;
+    max-height: 375px; overflow-y: auto;
   }
   #app-mobile .tabbar {
     position: fixed; left: 50%; right: auto; bottom: 20px;

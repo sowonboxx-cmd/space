@@ -345,13 +345,20 @@
   .date-tabs .dt.overdue.active { color: var(--danger); }
 
   .task-row {
+    position: relative;
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 10px 8px; margin: 0 -8px; border-radius: 8px;
+    padding: 10px 8px; margin: 0 -8px;
     border-bottom: 1px solid var(--line-soft);
-    font-size: 12.5px; cursor: pointer; transition: background .12s ease;
+    font-size: 12.5px; cursor: pointer;
   }
-  .task-row:hover { background: var(--bg); }
-  .task-row.opening { background: var(--line-soft); }
+  .task-row::before {
+    content: ''; position: absolute; inset: 2px 0 3px;
+    border-radius: 8px; background: transparent; z-index: 0;
+    transition: background .12s ease; pointer-events: none;
+  }
+  .task-row:hover::before { background: var(--bg); }
+  .task-row.opening::before { background: var(--line-soft); }
+  .task-row > * { position: relative; z-index: 1; }
   .task-row:last-child { border-bottom: none; }
   .checkbox {
     width: 15px; height: 15px; border-radius: 5px; border: 1.5px solid var(--faint);
@@ -411,7 +418,7 @@
   #venture-list-desktop::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
   #venture-list-desktop:hover::-webkit-scrollbar-thumb,
   #venture-list-desktop.is-scrolling::-webkit-scrollbar-thumb { background: var(--line); }
-  .m-content { padding: 6px 20px 92px; }
+  .m-content { padding: 6px 20px 84px; }
   .m-hello { display: flex; align-items: center; gap: 12px; margin: 10px 0 18px; }
   .m-hello-left { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
   .m-hello h2 { font-family: 'Inter', sans-serif; font-size: 19px; margin: 0; line-height: 1.2; flex-shrink: 0; }
@@ -707,6 +714,18 @@
     position: relative; width: 100%; max-width: 560px; margin: 0 auto;
     border: none; border-radius: 0; box-shadow: none;
     min-height: 100vh; background: var(--bg);
+    display: flex; flex-direction: column;
+  }
+  #app-mobile .m-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  #app-mobile .m-hello, #app-mobile .project-strip { flex-shrink: 0; }
+  #app-mobile .panel:last-child {
+    flex: 1; display: flex; flex-direction: column; min-height: 0;
+  }
+  #app-mobile .panel:last-child .m-section-title,
+  #app-mobile .panel:last-child .date-tabs { flex-shrink: 0; }
+  #app-mobile .m-tasks.is-active {
+    display: flex; flex-direction: column;
+    flex: 1; min-height: 0; max-height: none; overflow-y: auto;
   }
   #app-mobile .tabbar {
     position: fixed; left: 50%; right: auto; bottom: 20px;
@@ -727,20 +746,10 @@
     position: fixed; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 560px;
   }
   #app-desktop .search-overlay { position: fixed; inset: 0; }
-
-  #theme-fab {
-    position: fixed; top: 16px; right: 16px; z-index: 300;
-    width: 38px; height: 38px; border-radius: 50%;
-    background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow);
-    cursor: pointer; font-size: 15px; color: var(--ink);
-    display: flex; align-items: center; justify-content: center;
-  }
 </style>
 </head>
 
 <body>
-
-  <button id="theme-fab" title="Changer de thème">☾</button>
 
   <div id="app-desktop" class="desktop-frame">
         <div class="d-rail">
@@ -752,6 +761,7 @@
             <a><span class="dot"></span>Wiki</a>
             <a><span class="dot"></span>Projets</a>
             <a><span class="dot"></span>Réglages</a>
+            <a data-theme-toggle><span class="dot"></span><span data-theme-label>Mode sombre</span></a>
           </nav>
           <div class="d-rail-foot">SYNC · CLOUDFLARE WORKER<br>DERNIÈRE MAJ IL Y A 4MIN</div>
         </div>
@@ -1321,8 +1331,8 @@
               <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
               <span class="label">Accueil</span>
             </div>
-            <div class="t">
-              <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="t" data-theme-toggle>
+              <span class="icon-badge" data-theme-icon><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
             </div>
             <div class="t" data-open-search>
               <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
@@ -1504,14 +1514,19 @@
   </div>
 
 <script>
-  const themeFab = document.getElementById('theme-fab');
-  function setThemeGlobal(t) {
+  const MOON_PATH = 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';
+  const SUN_PATH = 'M12 4V2M12 22v-2M4.93 4.93L3.51 3.51M20.49 20.49l-1.42-1.42M4 12H2M22 12h-2M4.93 19.07l-1.42 1.42M20.49 3.51l-1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z';
+  function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    themeFab.textContent = t === 'light' ? '☾' : '☀';
+    document.querySelectorAll('[data-theme-icon] svg path').forEach(p => p.setAttribute('d', t === 'light' ? MOON_PATH : SUN_PATH));
+    document.querySelectorAll('[data-theme-label]').forEach(el => el.textContent = t === 'light' ? 'Mode sombre' : 'Mode clair');
   }
-  themeFab.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    setThemeGlobal(next);
+  document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+    });
   });
 
   const kpiDoneDesktop = document.getElementById('kpi-done-desktop');

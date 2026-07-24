@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" id="theme-color-meta" content="#EEF1EC">
+<meta name="theme-color" id="theme-color-meta" content="#14171A">
 <title>Ultimate Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -342,7 +342,7 @@
   .date-tabs .dt.overdue { color: var(--danger); }
   #app-mobile .date-tabs { flex-wrap: nowrap; }
   #app-mobile .date-tabs .dt {
-    flex: 0 0 20%; flex-shrink: 0; text-align: center;
+    flex: 0 0 calc((100% - 8px) / 5); flex-shrink: 0; text-align: center;
     padding-left: 6px; padding-right: 6px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
@@ -468,6 +468,12 @@
   }
   .pk-pct { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--ink); opacity: 0.88; letter-spacing: -0.01em; }
   .pk-count { font-size: 10px; font-weight: 700; color: var(--faint); margin-top: 5px; }
+  .tasks-summary {
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft);
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted);
+  }
+  .tasks-summary svg { width: 13px; height: 13px; color: var(--accent-rosalina); flex-shrink: 0; }
   .m-section-title {
     display: flex; justify-content: flex-end; align-items: center;
     margin: 0 0 8px;
@@ -545,8 +551,10 @@
   }
   .search-input-row input {
     flex: 1; border: none; background: transparent; outline: none;
-    font-family: 'Inter', sans-serif; font-size: 14px; color: var(--ink);
+    font-family: 'Inter', sans-serif; font-size: 16px; color: var(--ink);
   }
+  .search-input-row .search-icon { color: var(--faint); display: flex; flex-shrink: 0; }
+  .search-input-row .search-icon svg { width: 16px; height: 16px; }
   .search-close { border: none; background: transparent; color: var(--faint); cursor: pointer; font-size: 13px; }
   .search-results { max-height: 320px; overflow-y: auto; padding: 6px; }
   .search-result { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 10px; cursor: pointer; }
@@ -1055,7 +1063,7 @@
         <div class="search-overlay" id="search-desktop">
           <div class="search-box">
             <div class="search-input-row">
-              <span>🔍</span>
+              <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
               <input type="text" placeholder="Rechercher un projet, une page, une tâche…" data-search-input>
               <button class="search-close" data-close-search>✕</button>
             </div>
@@ -1329,6 +1337,10 @@
             <div class="m-tasks" data-tab="nodate">
               <div class="empty-state">Aucune tâche sans date</div>
             </div>
+            <div class="tasks-summary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              <span data-tasks-summary>0/0</span>
+            </div>
             </div>
           </div>
 
@@ -1354,7 +1366,7 @@
           <div class="search-overlay" id="search-mobile">
             <div class="search-box">
               <div class="search-input-row">
-                <span>🔍</span>
+                <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
                 <input type="text" placeholder="Rechercher…" data-search-input>
                 <button class="search-close" data-close-search>✕</button>
               </div>
@@ -1536,9 +1548,48 @@
       applyTheme(next);
     });
   });
+  applyTheme(document.documentElement.getAttribute('data-theme'));
 
   const kpiDoneDesktop = document.getElementById('kpi-done-desktop');
   const kpiDoneMobile = document.getElementById('kpi-done-mobile');
+
+  // default sort: tasks with a time first (ascending), then by priority (high > med > low)
+  function priorityRank(row) {
+    const cb = row.querySelector('.checkbox');
+    if (cb?.classList.contains('p-high')) return 0;
+    if (cb?.classList.contains('p-med')) return 1;
+    if (cb?.classList.contains('p-low')) return 2;
+    return 3;
+  }
+  function timeOf(row) {
+    const text = row.querySelector('.tmeta .when')?.textContent || '';
+    const m = text.match(/(\d{1,2}):(\d{2})/);
+    return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : null;
+  }
+  document.querySelectorAll('.task-list, .m-tasks').forEach(list => {
+    const rows = [...list.querySelectorAll('.task-row')];
+    rows.sort((a, b) => {
+      const ta = timeOf(a), tb = timeOf(b);
+      if (ta !== null && tb !== null) return ta - tb;
+      if (ta !== null) return -1;
+      if (tb !== null) return 1;
+      return priorityRank(a) - priorityRank(b);
+    });
+    rows.forEach(r => list.appendChild(r));
+  });
+
+  // done/total summary for the active tab (mobile), excludes rows hidden by the project filter
+  function updateTasksSummary(phone) {
+    const summaryEl = phone.querySelector('[data-tasks-summary]');
+    if (!summaryEl) return;
+    const activeList = phone.querySelector('.m-tasks.is-active');
+    if (!activeList) return;
+    const rows = [...activeList.querySelectorAll('.task-row')].filter(r => !r.classList.contains('filtered-out'));
+    const done = rows.filter(r => r.classList.contains('is-done')).length;
+    summaryEl.textContent = `${done}/${rows.length}`;
+  }
+  document.querySelectorAll('.phone').forEach(phone => updateTasksSummary(phone));
+
   document.querySelectorAll('.checkbox').forEach(cb => {
     cb.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1553,6 +1604,8 @@
         const next = current + (nowDone ? -1 : 1);
         kpiEl.textContent = String(Math.max(0, next));
       }
+      const phone = cb.closest('.phone');
+      if (phone) updateTasksSummary(phone);
     });
   });
 
@@ -1587,15 +1640,29 @@
     { title: "Accueil", type: "Page", project: "Foodmaster", page: "Website" },
     { title: "Header", type: "Page", project: "Foodmaster", page: "Website" },
     { title: "Hero image", type: "Sous-tâche", project: "Foodmaster", page: "Website › Header" },
-    { title: "Bouton copier l'email", type: "Todo", project: "Rosalina", page: "Dashboard" },
-    { title: "Renouveler certificat SSL", type: "Todo", project: "Rosalina", page: "Infra" },
-    { title: "Galerie de polices", type: "Todo", project: "Foodmaster", page: "Les Blancs Becs" },
-    { title: "Recolorer les tags de format", type: "Todo", project: "Foodmaster", page: "Les Blancs Becs" },
-    { title: "Cartes Supabase", type: "Todo", project: "Manga Squad", page: "Homepage" },
-    { title: "Export photos lookbook", type: "Todo", project: "PVPP", page: "Contenu" },
     { title: "Pitfalls & règles SQL", type: "Page", project: "Rosalina", page: null },
     { title: "Schéma Supabase", type: "Page", project: "Manga Squad", page: null },
     { title: "Notes oEmbed proxy", type: "Page", project: "天才 Vault", page: null },
+    { title: "Renouveler certificat SSL", type: "Todo", project: "Rosalina", page: "Infra" },
+    { title: "Répondre au client", type: "Todo", project: "Foodmaster", page: "Drevici Oyster › Support" },
+    { title: "Bouton copier l'email", type: "Todo", project: "Rosalina", page: "dashboard.html" },
+    { title: "Galerie de polices", type: "Todo", project: "Foodmaster", page: "Blancs Becs" },
+    { title: "Corriger contraste dark mode", type: "Todo", project: "Rosalina", page: "devis_rosalina" },
+    { title: "Compresser les visuels menu", type: "Todo", project: "Foodmaster", page: "Drevici Oyster" },
+    { title: "Corriger bug tab bar mobile", type: "Todo", project: "天才", page: "Vault" },
+    { title: "Recolorer les tags de format", type: "Todo", project: "Foodmaster", page: "Blancs Becs" },
+    { title: "Trier les visuels PVPP", type: "Todo", project: "PVPP", page: "Lookbook" },
+    { title: "Corriger contraste champs", type: "Todo", project: "Rosalina", page: "devis_rosalina › Dark mode" },
+    { title: "Cartes Supabase", type: "Todo", project: "Manga Squad", page: "Homepage" },
+    { title: "Relire le devis", type: "Todo", project: "Rosalina", page: "devis_rosalina › Séjour août" },
+    { title: "Publier le changelog", type: "Todo", project: "Foodmaster", page: "Publication" },
+    { title: "Export photos lookbook", type: "Todo", project: "PVPP", page: "Instagram" },
+    { title: "Page paiement Corée", type: "Todo", project: "Manga Squad", page: "Notion" },
+    { title: "Répondre au client Blancs Becs", type: "Todo", project: "Foodmaster", page: "Support" },
+    { title: "Vérifier sauvegarde Supabase", type: "Todo", project: "Manga Squad", page: "Infra" },
+    { title: "Retoucher le logo", type: "Todo", project: "PVPP", page: "Identité" },
+    { title: "Mettre à jour le README", type: "Todo", project: "天才", page: "Vault" },
+    { title: "Planifier le post Instagram", type: "Todo", project: "PVPP", page: "Contenu" },
   ];
   function iconFor(type) { return type === 'Page' ? '📄' : type === 'Todo' ? '☐' : '↳'; }
   function renderSearch(overlay, query) {
@@ -1794,6 +1861,8 @@
         scope.querySelectorAll('.task-list[data-tab], .m-tasks[data-tab]').forEach(list => {
           list.classList.toggle('is-active', list.dataset.tab === tab);
         });
+        const phone = group.closest('.phone');
+        if (phone) updateTasksSummary(phone);
       });
     });
   });
@@ -1845,6 +1914,7 @@
       if (wasActive) {
         phone.querySelectorAll('.task-row[data-project]').forEach(row => row.classList.remove('filtered-out'));
         phone.querySelector('[data-reset-filter]')?.classList.remove('visible');
+        updateTasksSummary(phone);
         return;
       }
 
@@ -1854,6 +1924,7 @@
         row.classList.toggle('filtered-out', row.dataset.project !== project);
       });
       phone.querySelector('[data-reset-filter]')?.classList.add('visible');
+      updateTasksSummary(phone);
     });
   });
   document.querySelectorAll('[data-reset-filter]').forEach(btn => {
@@ -1864,6 +1935,7 @@
       phone.querySelectorAll('.task-row[data-project]').forEach(row => row.classList.remove('filtered-out'));
       phone.querySelectorAll('.project-block').forEach(b => b.classList.remove('active-filter'));
       btn.classList.remove('visible');
+      updateTasksSummary(phone);
     });
   });
 

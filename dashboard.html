@@ -1090,7 +1090,7 @@
                   <span class="sp-sep"></span>
                   <span class="sp-item" style="color:var(--accent-pvpp)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    <b>23</b>
+                    <b id="kpi-done-mobile">23</b>
                   </span>
                   <span class="sp-sep"></span>
                   <span class="sp-item" style="color:var(--accent-rosalina)">
@@ -1855,6 +1855,24 @@
         if (phone) updateTasksSummary(phone);
       });
     });
+
+    // swipe left/right over the task content to move between tabs, no tapping needed
+    let touchX = 0, touchY = 0, touchOnTabs = false;
+    scope.addEventListener('touchstart', (e) => {
+      touchX = e.touches[0].clientX;
+      touchY = e.touches[0].clientY;
+      touchOnTabs = !!e.target.closest('.date-tabs');
+    }, { passive: true });
+    scope.addEventListener('touchend', (e) => {
+      if (touchOnTabs) return; // let the tab strip's own horizontal scroll handle that gesture
+      const dx = e.changedTouches[0].clientX - touchX;
+      const dy = e.changedTouches[0].clientY - touchY;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return; // mostly-vertical = scrolling, ignore
+      const tabs = [...group.querySelectorAll('.dt')];
+      const activeIndex = tabs.findIndex(t => t.classList.contains('active'));
+      const nextIndex = dx < 0 ? activeIndex + 1 : activeIndex - 1; // swipe left = next tab, right = previous
+      if (nextIndex >= 0 && nextIndex < tabs.length) tabs[nextIndex].click();
+    }, { passive: true });
   });
 
   // "..." menu — open/close

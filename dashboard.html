@@ -469,7 +469,7 @@
   .pk-pct { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--ink); opacity: 0.88; letter-spacing: -0.01em; }
   .pk-count { font-size: 10px; font-weight: 700; color: var(--faint); margin-top: 5px; }
   .m-section-title {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: flex-end; align-items: center;
     margin: 0 0 8px;
   }
   .m-section-title h3 { font-family: 'Inter', sans-serif; font-size: 14.5px; margin: 0; font-weight: 700; }
@@ -1095,6 +1095,7 @@
               <div class="h3-right">
                 <button class="dots-btn" data-menu-toggle>•••</button>
                 <div class="dots-menu">
+                  <button class="dots-item" data-toggle-completed>Voir les tâches terminées</button>
                   <button class="dots-item">Activité</button>
                   <button class="dots-item">Historique</button>
                 </div>
@@ -1131,13 +1132,8 @@
 
             <div class="panel">
             <div class="m-section-title">
-              <h3>Tâches</h3>
               <span class="h3-right">
-                <button class="dots-btn" data-menu-toggle>⋯</button>
                 <button class="reset-filter-btn" data-reset-filter title="Voir toutes les tâches">↺</button>
-                <div class="dots-menu">
-                  <button class="dots-item" data-toggle-completed>Voir les tâches terminées</button>
-                </div>
               </span>
             </div>
             <div class="date-tabs" data-tabgroup>

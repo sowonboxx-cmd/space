@@ -271,7 +271,6 @@
   }
   .dots-btn:hover { background: var(--bg); }
   .panel h3 .dots-btn, .m-section-title .dots-btn { color: var(--ink); }
-  .reset-filter-btn { color: var(--ink); }
   .dots-menu {
     display: none; position: absolute; top: 26px; right: 0; z-index: 5;
     background: var(--card); border: 1px solid var(--line); border-radius: 10px;
@@ -285,13 +284,9 @@
   }
   .dots-item:hover { background: var(--bg); }
 
-  .task-row.is-done { display: none; }
-  .task-list.show-completed .task-row.is-done,
-  .m-tasks.show-completed .task-row.is-done {
-    display: flex; opacity: 0.55;
-  }
-  .task-list.show-completed .task-row.is-done .tname,
-  .m-tasks.show-completed .task-row.is-done .tname { text-decoration: line-through; }
+  .task-row.is-done { opacity: 0.55; }
+  .task-list.hide-completed .task-row.is-done,
+  .m-tasks.hide-completed .task-row.is-done { display: none; }
 
   .task-list[data-tab], .m-tasks[data-tab] { display: none; }
   .task-list[data-tab].is-active, .m-tasks[data-tab].is-active { display: block; }
@@ -474,11 +469,6 @@
   }
   .m-section-title h3 { font-family: 'Inter', sans-serif; font-size: 14.5px; margin: 0; font-weight: 700; }
   .m-section-title a { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 10px; color: var(--faint); text-decoration: none; }
-  .reset-filter-btn {
-    display: none; border: none; background: transparent; color: var(--faint);
-    font-size: 14px; cursor: pointer; margin-right: 4px;
-  }
-  .reset-filter-btn.visible { display: inline-flex; }
 
   .m-venture {
     background: var(--card); border: 1px solid var(--line-soft); border-radius: 14px;
@@ -872,7 +862,7 @@
                     <a href="#">TickTick sync</a>
                     <button class="dots-btn" data-menu-toggle>⋯</button>
                     <div class="dots-menu">
-                      <button class="dots-item" data-toggle-completed>Voir les tâches terminées</button>
+                      <button class="dots-item" data-toggle-completed>Masquer les tâches terminées</button>
                     </div>
                   </span>
                 </h3>
@@ -1062,9 +1052,7 @@
               <input type="text" placeholder="Rechercher un projet, une page, une tâche…" data-search-input>
               <button class="search-close" data-close-search>✕</button>
             </div>
-            <div class="search-results" data-search-results>
-              <div class="empty-state">Tapez pour chercher…</div>
-            </div>
+            <div class="search-results" data-search-results></div>
           </div>
         </div>
   </div>
@@ -1100,7 +1088,7 @@
                     <b>5</b>
                   </span>
                   <span class="sp-sep"></span>
-                  <span class="sp-item" style="color:var(--muted)">
+                  <span class="sp-item" style="color:var(--accent-pvpp)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                     <b>23</b>
                   </span>
@@ -1114,7 +1102,7 @@
               <div class="h3-right">
                 <button class="dots-btn" data-menu-toggle>•••</button>
                 <div class="dots-menu">
-                  <button class="dots-item" data-toggle-completed>Voir les tâches terminées</button>
+                  <button class="dots-item" data-toggle-completed>Masquer les tâches terminées</button>
                   <button class="dots-item">Activité</button>
                   <button class="dots-item">Historique</button>
                 </div>
@@ -1150,11 +1138,6 @@
             </div>
 
             <div class="panel">
-            <div class="m-section-title">
-              <span class="h3-right">
-                <button class="reset-filter-btn" data-reset-filter title="Voir toutes les tâches">↺</button>
-              </span>
-            </div>
             <div class="date-tabs" data-tabgroup>
               <div class="dt overdue" data-tab="overdue">Overdue</div>
               <div class="dt active" data-tab="today">Today</div>
@@ -1366,9 +1349,7 @@
                 <input type="text" placeholder="Rechercher…" data-search-input>
                 <button class="search-close" data-close-search>✕</button>
               </div>
-              <div class="search-results" data-search-results>
-                <div class="empty-state">Tapez pour chercher…</div>
-              </div>
+              <div class="search-results" data-search-results></div>
             </div>
           </div>
 
@@ -1562,17 +1543,20 @@
     const m = text.match(/(\d{1,2}):(\d{2})/);
     return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : null;
   }
-  document.querySelectorAll('.task-list, .m-tasks').forEach(list => {
+  function sortIncomplete(list) {
     const rows = [...list.querySelectorAll('.task-row')];
-    rows.sort((a, b) => {
+    const incomplete = rows.filter(r => !r.classList.contains('is-done'));
+    const done = rows.filter(r => r.classList.contains('is-done'));
+    incomplete.sort((a, b) => {
       const ta = timeOf(a), tb = timeOf(b);
       if (ta !== null && tb !== null) return ta - tb;
       if (ta !== null) return -1;
       if (tb !== null) return 1;
       return priorityRank(a) - priorityRank(b);
     });
-    rows.forEach(r => list.appendChild(r));
-  });
+    [...incomplete, ...done].forEach(r => list.appendChild(r));
+  }
+  document.querySelectorAll('.task-list, .m-tasks').forEach(list => sortIncomplete(list));
 
   // done/total summary for the active tab (mobile), excludes rows hidden by the project filter
   function updateTasksSummary(phone) {
@@ -1591,7 +1575,17 @@
       e.stopPropagation();
       cb.classList.toggle('done');
       const nowDone = cb.classList.contains('done');
-      cb.closest('.task-row')?.classList.toggle('is-done', nowDone);
+      const row = cb.closest('.task-row');
+      row?.classList.toggle('is-done', nowDone);
+
+      const list = row?.closest('.task-list, .m-tasks');
+      if (list) {
+        if (nowDone) {
+          list.appendChild(row); // freshly checked → goes to the bottom, after previously completed ones
+        } else {
+          sortIncomplete(list); // unchecked → rejoins the sorted incomplete group
+        }
+      }
 
       // "Tâches à faire" = remaining count — goes down when a task is checked off
       const kpiEl = cb.closest('.desktop-frame') ? kpiDoneDesktop : kpiDoneMobile;
@@ -1664,7 +1658,7 @@
   function renderSearch(overlay, query) {
     const list = overlay.querySelector('[data-search-results]');
     const q = query.trim().toLowerCase();
-    if (!q) { list.innerHTML = '<div class="empty-state">Tapez pour chercher…</div>'; return; }
+    if (!q) { list.innerHTML = ''; return; }
     const matches = SEARCH_DATA.filter(item => item.title.toLowerCase().includes(q));
     if (!matches.length) { list.innerHTML = '<div class="empty-state">Aucun résultat</div>'; return; }
     list.innerHTML = matches.slice(0, 6).map(m => `
@@ -1879,13 +1873,13 @@
 
   // show / hide completed tasks
   document.querySelectorAll('[data-toggle-completed]').forEach(btn => {
-    let showing = false;
+    let hidden = false;
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      showing = !showing;
+      hidden = !hidden;
       const scope = btn.closest('.panel') || btn.closest('.m-content');
-      scope.querySelectorAll('.task-list, .m-tasks').forEach(l => l.classList.toggle('show-completed', showing));
-      btn.textContent = showing ? 'Masquer les tâches terminées' : 'Voir les tâches terminées';
+      scope.querySelectorAll('.task-list, .m-tasks').forEach(l => l.classList.toggle('hide-completed', hidden));
+      btn.textContent = hidden ? 'Voir les tâches terminées' : 'Masquer les tâches terminées';
       btn.closest('.dots-menu')?.classList.remove('open');
     });
   });
@@ -1909,7 +1903,6 @@
 
       if (wasActive) {
         phone.querySelectorAll('.task-row[data-project]').forEach(row => row.classList.remove('filtered-out'));
-        phone.querySelector('[data-reset-filter]')?.classList.remove('visible');
         updateTasksSummary(phone);
         return;
       }
@@ -1919,18 +1912,6 @@
       phone.querySelectorAll('.task-row[data-project]').forEach(row => {
         row.classList.toggle('filtered-out', row.dataset.project !== project);
       });
-      phone.querySelector('[data-reset-filter]')?.classList.add('visible');
-      updateTasksSummary(phone);
-    });
-  });
-  document.querySelectorAll('[data-reset-filter]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const phone = btn.closest('.phone') || btn.closest('.desktop-frame');
-      if (!phone) return;
-      phone.querySelectorAll('.task-row[data-project]').forEach(row => row.classList.remove('filtered-out'));
-      phone.querySelectorAll('.project-block').forEach(b => b.classList.remove('active-filter'));
-      btn.classList.remove('visible');
       updateTasksSummary(phone);
     });
   });

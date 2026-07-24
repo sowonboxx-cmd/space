@@ -2,7 +2,7 @@
 <html lang="fr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" id="theme-color-meta" content="#14171A">
 <title>Ultimate Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -468,12 +468,6 @@
   }
   .pk-pct { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--ink); opacity: 0.88; letter-spacing: -0.01em; }
   .pk-count { font-size: 10px; font-weight: 700; color: var(--faint); margin-top: 5px; }
-  .tasks-summary {
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft);
-    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted);
-  }
-  .tasks-summary svg { width: 13px; height: 13px; color: var(--accent-rosalina); flex-shrink: 0; }
   .m-section-title {
     display: flex; justify-content: flex-end; align-items: center;
     margin: 0 0 8px;
@@ -553,6 +547,7 @@
     flex: 1; border: none; background: transparent; outline: none;
     font-family: 'Inter', sans-serif; font-size: 16px; color: var(--ink);
   }
+  .search-input-row input::placeholder { font-size: 12.5px; font-weight: 400; color: var(--faint); }
   .search-input-row .search-icon { color: var(--faint); display: flex; flex-shrink: 0; }
   .search-input-row .search-icon svg { width: 16px; height: 16px; }
   .search-close { border: none; background: transparent; color: var(--faint); cursor: pointer; font-size: 13px; }
@@ -1105,9 +1100,14 @@
                     <b>5</b>
                   </span>
                   <span class="sp-sep"></span>
+                  <span class="sp-item" style="color:var(--muted)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <b>23</b>
+                  </span>
+                  <span class="sp-sep"></span>
                   <span class="sp-item" style="color:var(--accent-rosalina)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                    <b>23</b>
+                    <b data-tasks-summary>0/0</b>
                   </span>
                 </div>
               </div>
@@ -1336,10 +1336,6 @@
 
             <div class="m-tasks" data-tab="nodate">
               <div class="empty-state">Aucune tâche sans date</div>
-            </div>
-            <div class="tasks-summary">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              <span data-tasks-summary>0/0</span>
             </div>
             </div>
           </div>

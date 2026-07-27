@@ -52,13 +52,16 @@
       "platform": "instagram",
       "categories": [
         "Tutoriel",
-        "Aura"
+        "PVPP",
+        "Will"
       ],
       "account": "Reels",
       "priority": "haute",
       "note": "",
       "addedAt": "2026-07-08T16:04:51.938Z",
-      "sortOrder": 5
+      "sortOrder": 5,
+      "prompt": "",
+      "source": ""
     },
     {
       "id": "l_mrcc37uic9ninf",

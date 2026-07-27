@@ -5084,6 +5084,21 @@
       "priority": "moyenne",
       "note": "Hook visuel pour commencer",
       "addedAt": "2026-07-27T03:37:51.456Z"
+    },
+    {
+      "id": "l_ms2p69daawbbwm",
+      "url": "https://www.instagram.com/p/DaGr-gCSE4o/?igsh=ZDZyMG42aDlvdTRm",
+      "platform": "instagram",
+      "categories": [
+        "Food",
+        "Food - Trend"
+      ],
+      "account": "",
+      "source": "",
+      "prompt": "",
+      "priority": "haute",
+      "note": "",
+      "addedAt": "2026-07-27T03:58:50.350Z"
     }
   ],
   "accounts": [

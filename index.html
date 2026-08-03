@@ -2,8 +2,6 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link rel="apple-touch-icon" href="https://domainerosalina.com/wp-content/uploads/2026/07/icon-insta.png">
-<link rel="icon" type="image/png" href="https://domainerosalina.com/wp-content/uploads/2026/07/icon-insta.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>天才 — Inspiration Hub</title>
 <style>
@@ -1338,8 +1336,9 @@ function persistUIState(){
       view: STATE.view,
       priorityFilter: STATE.priorityFilter,
       categoryFilter: STATE.categoryFilter,
-      accountFilter: STATE.accountFilter,
-      search: STATE.search
+      accountFilter: STATE.accountFilter
+      // search is intentionally NOT persisted — a search should never carry
+      // over into the next visit and hide an up-to-date home view.
     }));
   } catch(e){ /* ignore */ }
 }
@@ -1351,7 +1350,6 @@ function restoreUIState(){
     if(saved.priorityFilter) STATE.priorityFilter = saved.priorityFilter;
     if(saved.categoryFilter) STATE.categoryFilter = saved.categoryFilter;
     if(saved.accountFilter) STATE.accountFilter = saved.accountFilter;
-    if(saved.search) STATE.search = saved.search;
   } catch(e){ /* ignore */ }
 }
 
@@ -1876,8 +1874,16 @@ $('#deleteLinkBtn').onclick = ()=>{
 };
 
 // close modals on overlay click
-[$('#linkOverlay'), $('#settingsOverlay'), $('#searchOverlay'), $('#accountOverlay')].forEach(ov=>{
+[$('#linkOverlay'), $('#settingsOverlay'), $('#accountOverlay')].forEach(ov=>{
   ov.addEventListener('click', (e)=>{ if(e.target === ov) ov.classList.remove('show'); });
+});
+$('#searchOverlay').addEventListener('click', (e)=>{
+  if(e.target !== e.currentTarget) return;
+  e.currentTarget.classList.remove('show');
+  // "Done searching" — clear it so the home view isn't left hidden behind
+  // a stale filter next time the person looks.
+  STATE.search = '';
+  render();
 });
 
 /* ---------- Init ---------- */
@@ -1891,6 +1897,11 @@ updateHeaderHeightVar();
 
 restoreUIState();
 loadFromGitHub();
+
+// Auto-refresh from GitHub every minute — keeps multiple devices in sync
+// and keeps STATE.sha fresh, so adding links from one device doesn't cause
+// a stale-sha conflict when saving from another shortly after.
+setInterval(()=>{ loadFromGitHub(); }, 60000);
 
 })();
 </script>

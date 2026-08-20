@@ -388,7 +388,7 @@
       </div>
       <div class="header-search">
         <svg class="header-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="search" id="searchInput" placeholder="Rechercher..." autocomplete="off" name="vault-search-no-autofill" data-lpignore="true" data-1p-ignore>
+        <input type="text" inputmode="search" id="searchInput" placeholder="Rechercher..." autocomplete="off" name="vault-search-no-autofill" data-lpignore="true" data-1p-ignore>
       </div>
       <button class="btn-ghost icon-btn" id="searchMobileBtn" title="Rechercher">
         <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -419,7 +419,7 @@
   <div class="modal search-modal">
     <div class="search-modal-input">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="search" id="searchModalInput" placeholder="Rechercher..." autocomplete="off" name="vault-search-modal-no-autofill" data-lpignore="true" data-1p-ignore>
+      <input type="text" inputmode="search" id="searchModalInput" placeholder="Rechercher..." autocomplete="off" name="vault-search-modal-no-autofill" data-lpignore="true" data-1p-ignore>
     </div>
   </div>
 </div>
@@ -1895,13 +1895,12 @@ function updateHeaderHeightVar(){
 window.addEventListener('resize', updateHeaderHeightVar);
 updateHeaderHeightVar();
 
+STATE.search = '';
+$('#searchInput').value = '';
+$('#searchModalInput').value = '';
+
 restoreUIState();
 loadFromGitHub();
-
-// Auto-refresh from GitHub every minute — keeps multiple devices in sync
-// and keeps STATE.sha fresh, so adding links from one device doesn't cause
-// a stale-sha conflict when saving from another shortly after.
-setInterval(()=>{ loadFromGitHub(); }, 60000);
 
 })();
 </script>

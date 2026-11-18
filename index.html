@@ -11,7 +11,7 @@
 </script>
 <style>
   :root{
-    --shell:#F1F1F2; --panel:#FFFFFF; --card:#F6F6F7; --fill:#F1F1F3; --fill-2:#E9E9EC; --fill-3:#E4E4E8;
+    --shell:#F1F1F2; --panel:#FFFFFF; --card:#E6E6E9; --card-btn:#D8D8DD; --card-btn-2:#CDCDD3; --fill:#F1F1F3; --fill-2:#E9E9EC; --fill-3:#E4E4E8;
     --embed-bg:#ECECEF; --text:#18181B; --text-2:#3F3F46; --dim:#5F5F68; --faint:#8A8A93;
     --ink:#18181B; --on-ink:#FFFFFF; --overlay:rgba(24,24,27,.40);
     --haute-bg:rgba(232,93,64,.14); --haute-fg:#9A3A22; --haute-on:rgba(232,93,64,.26);
@@ -22,7 +22,7 @@
     --font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   html.dark{
-    --shell:#0F0F11; --panel:#18181B; --card:#202024; --fill:#232327; --fill-2:#2A2A2F; --fill-3:#323238;
+    --shell:#0F0F11; --panel:#18181B; --card:#202024; --card-btn:#2A2A2F; --card-btn-2:#323238; --fill:#232327; --fill-2:#2A2A2F; --fill-3:#323238;
     --embed-bg:#26262B; --text:#F4F4F5; --text-2:#D4D4D8; --dim:#A1A1AA; --faint:#7C7C85;
     --ink:#F4F4F5; --on-ink:#18181B; --overlay:rgba(0,0,0,.55);
     --haute-bg:rgba(240,120,95,.18); --haute-fg:#F5A893; --haute-on:rgba(240,120,95,.32);
@@ -86,7 +86,7 @@
   .dd-btn{height:44px; padding:0 14px; border-radius:12px; background:var(--fill); font-size:13.5px; color:var(--text-2); display:inline-flex; align-items:center; gap:8px; white-space:nowrap; line-height:1;}
   .dd-btn:hover{background:var(--fill-2);}
   .dd-btn svg{color:var(--dim);}
-  .dd-menu{position:absolute; right:0; top:calc(100% + 6px); min-width:190px; background:var(--card); border-radius:14px; box-shadow:0 14px 40px rgba(0,0,0,.14); padding:6px; display:none; flex-direction:column; gap:2px; z-index:40; max-height:320px; overflow-y:auto;}
+  .dd-menu{position:absolute; right:0; top:calc(100% + 6px); min-width:190px; background:var(--panel); border-radius:14px; box-shadow:0 14px 40px rgba(0,0,0,.14); padding:6px; display:none; flex-direction:column; gap:2px; z-index:40; max-height:320px; overflow-y:auto;}
   .dd.open .dd-menu{display:flex;}
   .dd-menu button{height:38px; padding:0 12px; border-radius:9px; font-size:13.5px; color:var(--text-2); text-align:left; display:flex; align-items:center; gap:8px; white-space:nowrap;}
   .dd-menu button:hover{background:var(--fill);}
@@ -137,8 +137,8 @@
   .card-acct{flex:1; min-width:0; text-align:left; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .card-acct:hover{text-decoration:underline;}
   .mini-btn{width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--text-2);}
-  .mini-btn.edit, .mini-btn.fav-btn{background:var(--fill-2);}
-  .mini-btn:hover{background:var(--fill-3);}
+  .mini-btn.edit, .mini-btn.fav-btn{background:var(--card-btn);}
+  .mini-btn:hover{background:var(--card-btn-2);}
   .fav-btn{color:var(--dim);}
   .fav-btn.on{color:var(--star);}
   .fav-btn.on svg{fill:var(--star-fill);}
@@ -163,6 +163,8 @@
   .chips{display:flex; flex-wrap:wrap; gap:5px;}
   .chip{font-size:12px; font-weight:500; padding:4px 9px; border-radius:999px; background:var(--fill-2); color:var(--text-2);}
   button.chip:hover{background:var(--fill-3);}
+  .card .chip:not(.prio){background:var(--card-btn);}
+  .card button.chip:not(.prio):hover{background:var(--card-btn-2);}
   .chip.prio{font-weight:600;}
   .chip.p-haute{background:var(--haute-bg); color:var(--haute-fg);}
   .chip.p-moyenne{background:var(--moyenne-bg); color:var(--moyenne-fg);}

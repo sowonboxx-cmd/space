@@ -178,6 +178,15 @@
     overflow:hidden; opacity:0; transition:opacity .25s ease;
   }
   .card .embed-wrap.ready{opacity:1;}
+  .card{contain:layout paint;}
+  .embed-placeholder{
+    width:100%; height:460px;
+    background:linear-gradient(100deg, var(--surface2) 30%, var(--chip-bg) 50%, var(--surface2) 70%);
+    background-size:250% 100%; animation:embedShimmer 1.4s ease-in-out infinite;
+  }
+  .embed-placeholder-other{height:140px;}
+  @keyframes embedShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+  .inline-ico{width:13px; height:13px; vertical-align:-2px; display:inline-block;}
   /* !important overrides the inline width Instagram's own embed.js sets via
      JS on its generated iframe — without this, the iframe briefly renders
      at its own fixed (often narrow) default width before Instagram resizes
@@ -436,7 +445,7 @@
     <div class="select-wrap">
       <select id="categoryFilter"><option value="">Catégories</option></select>
     </div>
-    <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
+    <button class="btn-rename-cat" id="renameCatBtn" style="display:none;" title="Renommer cette catégorie"><svg class="inline-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     <div class="spacer"></div>
     <span class="count-pill" id="countPill"></span>
   </div>
@@ -447,7 +456,7 @@
     <div class="select-wrap">
       <select id="accountCategoryFilter"><option value="">Catégories</option></select>
     </div>
-    <button class="btn-rename-cat" id="renameAccountCatBtn" style="display:none;" title="Renommer cette catégorie">✎</button>
+    <button class="btn-rename-cat" id="renameAccountCatBtn" style="display:none;" title="Renommer cette catégorie"><svg class="inline-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     <div class="spacer"></div>
     <span class="count-pill" id="accountsCountPill"></span>
   </div>
@@ -837,6 +846,11 @@ function normalizeInstagramUrl(url){
   try{
     const u = new URL(url);
     u.pathname = u.pathname.replace(/^\/reels\//, '/reel/');
+    if(!u.pathname.endsWith('/')) u.pathname += '/';
+    // Tracking params (?stkn=, ?igsh=, ?utm_...) make embed.js silently give
+    // up and leave a bare link instead of the post — strip them.
+    u.search = '';
+    u.hash = '';
     return u.toString();
   } catch(e){ return url; }
 }
@@ -963,7 +977,6 @@ function populateOembedSlots(items){
         link.account = entry.data.author_name;
         saveToGitHub();
         render();
-        return;
       }
       const slot = document.querySelector(`.embed-wrap[data-id="${link.id}"]`);
       if(!slot) return; // card no longer in view (filtered out / re-rendered)
@@ -1241,29 +1254,113 @@ function chipsHTML(l){
 
 let lastGridOrder = []; // ids in the order they were last rendered, top-left first
 
+const PENCIL_SVG = '<svg class="inline-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const LINK_SVG = '<svg class="inline-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+
+function cardMetaHTML(l){
+  return `
+    <div class="chips">${chipsHTML(l)}</div>
+    ${l.note ? `<div class="card-note">${escapeHtml(l.note)}</div>` : ''}
+    ${l.source ? `<a class="source-link" href="${l.source}" target="_blank" rel="noopener">${LINK_SVG} Source d'origine</a>` : ''}
+    <div class="card-actions">
+      <button class="btn-icon" data-action="edit" data-id="${l.id}">${PENCIL_SVG} Éditer</button>
+    </div>`;
+}
+
+function cardHTML(l){
+  return `<div class="card" data-id="${l.id}">
+      <div class="embed-wrap ready" data-id="${l.id}" data-url="${escapeHtml(l.url)}"><div class="embed-placeholder embed-placeholder-${l.platform}"></div></div>
+      <div class="card-meta" draggable="true">${cardMetaHTML(l)}</div>
+    </div>`;
+}
+
+/* Embeds are only built when a card gets near the viewport. Building ~24
+   Instagram iframes at once (and rebuilding all of them on every "load
+   more") was what made scrolling stall. */
+let embedObserver = null;
+let reprocessQueue = [];
+let reprocessTimer = null;
+
+function scheduleReprocess(links){
+  reprocessQueue.push(...links);
+  clearTimeout(reprocessTimer);
+  reprocessTimer = setTimeout(()=>{
+    const batch = reprocessQueue; reprocessQueue = [];
+    reprocessEmbeds(batch);
+  }, 120);
+}
+
+function revealEmbed(wrap){
+  const link = STATE.links.find(l=>l.id === wrap.dataset.id);
+  if(!link) return null;
+  wrap.innerHTML = buildEmbedHTML(link);
+  wrap.dataset.loaded = '1';
+  return link;
+}
+
+function getEmbedObserver(){
+  if(embedObserver || typeof IntersectionObserver === 'undefined') return embedObserver;
+  embedObserver = new IntersectionObserver((entries)=>{
+    const revealed = [];
+    entries.forEach(en=>{
+      if(!en.isIntersecting) return;
+      embedObserver.unobserve(en.target);
+      const link = revealEmbed(en.target);
+      if(link) revealed.push(link);
+    });
+    if(revealed.length){
+      scheduleReprocess(revealed);
+      populateOembedSlots(revealed);
+    }
+  }, { rootMargin: '900px 0px' });
+  return embedObserver;
+}
+
+function watchEmbed(wrap){
+  const obs = getEmbedObserver();
+  if(obs){ obs.observe(wrap); return; }
+  const link = revealEmbed(wrap); // no IntersectionObserver: load right away
+  if(link){ scheduleReprocess([link]); populateOembedSlots([link]); }
+}
+
 function renderGrid(items){
-  lastGridOrder = items.map(l=>l.id);
   const grid = $('#gridView');
-  grid.innerHTML = items.map(l => `
-    <div class="card" data-id="${l.id}">
-      <div class="embed-wrap" data-id="${l.id}">${buildEmbedHTML(l)}</div>
-      <div class="card-meta" draggable="true">
-        <div class="chips">${chipsHTML(l)}</div>
-        ${l.note ? `<div class="card-note">${escapeHtml(l.note)}</div>` : ''}
-        ${l.source ? `<a class="source-link" href="${l.source}" target="_blank" rel="noopener">🔗 Source d'origine</a>` : ''}
-        <div class="card-actions">
-          <button class="btn-icon" data-action="edit" data-id="${l.id}">✎ Éditer</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-  reprocessEmbeds(items);
-  populateOembedSlots(items);
-  // Force a frame boundary before revealing, so the opacity transition
-  // actually plays instead of being coalesced with the innerHTML write.
-  requestAnimationFrame(()=>{
-    grid.querySelectorAll('.embed-wrap').forEach(el=>el.classList.add('ready'));
-  });
+  const ids = items.map(l=>l.id);
+  const canReuse = lastGridOrder.length > 0 &&
+    lastGridOrder.length <= ids.length &&
+    grid.children.length === lastGridOrder.length &&
+    lastGridOrder.every((id,i)=>id === ids[i]);
+
+  if(canReuse){
+    // Same cards in the same order (plus maybe more at the end): keep the
+    // existing embeds alive, only refresh the info under each card.
+    items.forEach((l,i)=>{
+      if(i >= lastGridOrder.length) return;
+      const card = grid.children[i];
+      const meta = card.querySelector('.card-meta');
+      const html = cardMetaHTML(l);
+      if(meta._html !== html){ meta.innerHTML = html; meta._html = html; }
+      const wrap = card.querySelector('.embed-wrap');
+      if(wrap.dataset.url !== l.url){
+        wrap.dataset.url = l.url;
+        wrap.dataset.loaded = '';
+        wrap.innerHTML = `<div class="embed-placeholder embed-placeholder-${l.platform}"></div>`;
+        watchEmbed(wrap);
+      }
+    });
+    const added = items.slice(lastGridOrder.length);
+    if(added.length){
+      grid.insertAdjacentHTML('beforeend', added.map(cardHTML).join(''));
+      Array.from(grid.children).slice(lastGridOrder.length).forEach(card=>{
+        watchEmbed(card.querySelector('.embed-wrap'));
+      });
+    }
+  } else {
+    if(embedObserver){ embedObserver.disconnect(); }
+    grid.innerHTML = items.map(cardHTML).join('');
+    grid.querySelectorAll('.embed-wrap').forEach(watchEmbed);
+  }
+  lastGridOrder = ids;
 }
 
 function renderList(items){
@@ -1274,9 +1371,9 @@ function renderList(items){
       <td class="url-cell"><a href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a></td>
       <td>${chipsHTML(l)}</td>
       <td>${new Date(l.addedAt).toLocaleDateString('fr-FR')}</td>
-      <td style="max-width:220px;">${escapeHtml(l.note||'')}${l.source ? ` <a class="source-link" href="${l.source}" target="_blank" rel="noopener">🔗</a>` : ''}</td>
+      <td style="max-width:220px;">${escapeHtml(l.note||'')}${l.source ? ` <a class="source-link" href="${l.source}" target="_blank" rel="noopener">${LINK_SVG}</a>` : ''}</td>
       <td class="row-actions">
-        <button class="btn-icon" data-action="edit" data-id="${l.id}">✎</button>
+        <button class="btn-icon" data-action="edit" data-id="${l.id}">${PENCIL_SVG}</button>
       </td>
     </tr>
   `).join('');

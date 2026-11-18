@@ -64,14 +64,36 @@
   .theme-sun{display:none;} html.dark .theme-sun{display:block;} html.dark .theme-moon{display:none;}
 
   /* ---------- Search + toolbar ---------- */
-  .search{width:100%; max-width:680px; margin:0 auto 22px; display:flex; align-items:center; gap:12px; background:var(--fill); border-radius:999px; padding:0 22px; height:56px;}
-  .search input{all:unset; flex:1; min-width:0; font-size:16px; color:var(--text);}
+  .search{width:100%; max-width:640px; margin:0 auto; display:flex; align-items:center; gap:12px; background:var(--fill); border-radius:999px; padding:0 20px; height:44px;}
+  .search input{all:unset; flex:1; min-width:0; font-size:15px; color:var(--text);}
   .search input::placeholder{color:var(--dim);}
   .search .kbd{font-size:12px; color:var(--dim); background:var(--fill-3); border-radius:7px; padding:3px 7px;}
   .search-clear{width:28px; height:28px; border-radius:50%; display:none; align-items:center; justify-content:center; color:var(--dim);}
   .search.has-value .search-clear{display:flex;}
 
-  .toolbar{position:sticky; top:0; z-index:20; background:var(--panel); display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:10px 0 14px; margin-bottom:6px;}
+  .toolbar{position:sticky; top:0; z-index:20; background:var(--panel); display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,640px) minmax(0,1fr); align-items:center; gap:16px; padding:10px 0 16px; margin-bottom:6px;}
+  .toolbar .crumb{justify-self:start;}
+  .toolbar .tool-right{justify-self:end; margin-left:0;}
+  .side-add{flex:none; width:100%; height:42px; justify-content:center; border-radius:12px; font-size:14px;}
+  .nav-item .tag{padding:3px 10px; border-radius:999px; font-size:13px; font-weight:500;}
+  .nav-item.prio-item{padding:6px 10px;}
+  .nav-item.prio-item.active .tag{font-weight:700;}
+  .nav-item.prio-item.active .tag.p-haute{background:var(--haute-on);}
+  .nav-item.prio-item.active .tag.p-moyenne{background:var(--moyenne-on);}
+  .nav-item.prio-item.active .tag.p-faible{background:var(--faible-on);}
+  .nav-item.prio-item.active .tag.p-aucune{background:var(--aucune-on);}
+  .dd{position:relative;}
+  .dd-btn{height:44px; padding:0 14px; border-radius:12px; background:var(--fill); font-size:13.5px; color:var(--text-2); display:inline-flex; align-items:center; gap:8px; white-space:nowrap; line-height:1;}
+  .dd-btn:hover{background:var(--fill-2);}
+  .dd-btn svg{color:var(--dim);}
+  .dd-menu{position:absolute; right:0; top:calc(100% + 6px); min-width:190px; background:var(--card); border-radius:14px; box-shadow:0 14px 40px rgba(0,0,0,.14); padding:6px; display:none; flex-direction:column; gap:2px; z-index:40; max-height:320px; overflow-y:auto;}
+  .dd.open .dd-menu{display:flex;}
+  .dd-menu button{height:38px; padding:0 12px; border-radius:9px; font-size:13.5px; color:var(--text-2); text-align:left; display:flex; align-items:center; gap:8px; white-space:nowrap;}
+  .dd-menu button:hover{background:var(--fill);}
+  .dd-menu button.on{color:var(--text); font-weight:600;}
+  .dd-menu button .chk{margin-left:auto;}
+  .embed-wrap blockquote.instagram-media{background:var(--embed-bg) !important;}
+  .embed-wrap blockquote.instagram-media a{font-size:0 !important; color:transparent !important;}
   .crumb{display:flex; align-items:baseline; gap:8px; margin-right:6px; min-width:0;}
   .crumb .parent{font-size:14px; color:var(--dim); background:none; padding:0;}
   .crumb .parent:hover{color:var(--text);}
@@ -99,8 +121,8 @@
   .sort-select{all:unset; height:36px; padding:0 30px 0 12px; border-radius:10px; background:var(--fill); font-size:13px; color:var(--text-2); cursor:pointer;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235F5F68' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 10px center;}
-  .seg{display:flex; background:var(--fill); border-radius:10px; padding:3px;}
-  .seg button{width:32px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--dim);}
+  .seg{display:flex; background:var(--fill); border-radius:12px; padding:4px; height:44px; box-sizing:border-box;}
+  .seg button{width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--dim);}
   .seg button.active{background:var(--panel); color:var(--text);}
   .primary{height:36px; padding:0 14px; border-radius:10px; background:var(--ink); color:var(--on-ink); font-size:13.5px; font-weight:600; display:inline-flex; align-items:center; gap:7px;}
   .primary:hover{opacity:.9;}
@@ -290,7 +312,8 @@
     .m-btn{width:44px; height:44px; border-radius:14px; background:var(--fill); display:flex; align-items:center; justify-content:center; color:var(--text); flex:none;}
     .m-btn.dot{position:relative;}
     .m-btn.dot::after{content:''; position:absolute; top:9px; right:9px; width:8px; height:8px; border-radius:50%; background:var(--haute-fg);}
-    .search{height:48px; padding:0 18px; margin:0 0 12px; max-width:none;}
+    .search{height:48px; padding:0 18px; margin:0; max-width:none;}
+    .toolbar{display:block;}
     .search .kbd{display:none;}
     .search input{font-size:16px;}
     .toolbar{position:static; padding:0; margin-bottom:12px;}
@@ -304,7 +327,7 @@
     .mini-btn{width:44px; height:40px; border-radius:12px;}
     .chip{font-size:13px; padding:5px 11px;}
     body.m-folders .folders-home{display:block;}
-    body.m-folders #linksArea, body.m-folders .toolbar, body.m-folders .sub-chips{display:none !important;}
+    body.m-folders #linksArea, body.m-folders .sub-chips{display:none !important;}
     .bottom-nav{display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); align-items:center; position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); height:66px; background:#18181B; border-radius:22px; padding:0 6px; z-index:50;}
     html.dark .bottom-nav{background:#2A2A2F;}
     .bottom-nav button{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; color:#B4B4BC; height:100%; justify-content:center;}
@@ -341,7 +364,12 @@
     <button type="button" class="brand" id="homeReset" aria-label="Accueil">
       <span class="brand-mark">天</span><span class="brand-name">天才</span>
     </button>
+    <button type="button" class="primary side-add" data-action="add" id="sideAddBtn"></button>
     <nav class="nav-group" id="navShortcuts" aria-label="Raccourcis"></nav>
+    <div class="nav-group">
+      <div class="nav-label" id="filterNavLabel">Priorité</div>
+      <div id="prioNav" class="nav-group"></div>
+    </div>
     <div class="nav-group">
       <div class="nav-label">Dossiers</div>
       <div id="folderNav" class="nav-group"></div>
@@ -371,25 +399,24 @@
       </button>
     </div>
 
-    <label class="search" id="searchBox">
+
+
+    <div class="toolbar" id="toolbar">
+      <div class="crumb" id="crumb"></div>
+      <label class="search" id="searchBox">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--dim)" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input type="text" inputmode="search" id="searchInput" placeholder="Rechercher un compte, une catégorie, une note…" aria-label="Rechercher" autocomplete="off" name="vault-search-no-autofill" data-lpignore="true" data-1p-ignore>
+      <input type="text" inputmode="search" id="searchInput" placeholder="Rechercher un compte, une catégorie, une note…" aria-label="Rechercher" autocomplete="off" name="vault-search-no-autofill" readonly data-lpignore="true" data-1p-ignore>
       <button type="button" class="search-clear" id="searchClear" aria-label="Effacer la recherche">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
       <span class="kbd">⌘K</span>
     </label>
-
+      <div class="tool-right" id="toolRight"></div>
+    </div>
     <section class="folders-home" id="foldersHome" aria-label="Dossiers">
       <div class="shortcuts" id="mShortcuts"></div>
       <div class="folder-grid" id="folderGrid"></div>
     </section>
-
-    <div class="toolbar" id="toolbar">
-      <div class="crumb" id="crumb"></div>
-      <div class="pills" id="toolbarPills"></div>
-      <div class="tool-right" id="toolRight"></div>
-    </div>
     <div class="sub-chips" id="subChips"></div>
 
     <div id="linksArea">
@@ -557,7 +584,7 @@
       </button>
     </div>
     <div class="sheet-body col">
-      <label class="field"><span class="field-label">Token GitHub</span><input type="password" class="input" id="ghToken" placeholder="ghp_…" autocomplete="off"></label>
+      <label class="field"><span class="field-label">Token GitHub</span><input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><input type="password" class="input" id="ghToken" placeholder="ghp_…" autocomplete="new-password"></label>
       <label class="field"><span class="field-label">Propriétaire / dépôt</span><input type="text" class="input" id="ghRepo" placeholder="utilisateur/depot" autocomplete="off"></label>
       <label class="field"><span class="field-label">Chemin du fichier</span><input type="text" class="input" id="ghPath" placeholder="data/links.json" autocomplete="off"></label>
       <label class="field"><span class="field-label">Branche</span><input type="text" class="input" id="ghBranch" placeholder="main" autocomplete="off"></label>
@@ -1181,27 +1208,40 @@ function renderToolbar(count){
     `<button type="button" class="rename${STATE.section === 'links' && STATE.folder ? ' show' : ''}" data-action="rename" aria-label="Renommer">${SVG.pencil}</button>`;
 
   if(STATE.section === 'accounts'){
-    $('#toolbarPills').innerHTML =
-      `<button type="button" class="pill all${!STATE.accountQualityFilter ? ' active' : ''}" data-q-filter="">Toutes</button>` +
-      QUALS.map(q => `<button type="button" class="pill q-${q}${STATE.accountQualityFilter === q ? ' active' : ''}" data-q-filter="${q}">${QUAL_LABEL[q]}</button>`).join('');
     const cats = allAccountCategories();
-    $('#toolRight').innerHTML =
-      `<select class="sort-select" id="accCatSelect" aria-label="Catégorie"><option value="">Toutes les catégories</option>${cats.map(c => `<option value="${escapeHtml(c)}"${STATE.accountCategoryFilter === c ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>` +
-      `<button type="button" class="primary" data-action="add">${SVG.plus}Ajouter un compte</button>`;
+    $('#toolRight').innerHTML = dropdownHTML('acccat', STATE.accountCategoryFilter || 'Toutes les catégories',
+      [['', 'Toutes les catégories'], ...cats.map(c => [c, c])], STATE.accountCategoryFilter);
     return;
   }
-
-  $('#toolbarPills').innerHTML =
-    `<button type="button" class="pill all${STATE.priorityFilter === 'toutes' ? ' active' : ''}" data-p-filter="toutes">Toutes</button>` +
-    PRIOS.map(p => `<button type="button" class="pill p-${p}${STATE.priorityFilter === p ? ' active' : ''}" data-p-filter="${p}">${capitalize(p)}</button>`).join('');
   $('#toolRight').innerHTML =
-    `<select class="sort-select" id="sortSelect" aria-label="Trier">
-       <option value="date"${STATE.sort === 'date' ? ' selected' : ''}>Date d'ajout</option>
-       <option value="priority"${STATE.sort === 'priority' ? ' selected' : ''}>Priorité</option>
-       <option value="account"${STATE.sort === 'account' ? ' selected' : ''}>Compte</option>
-     </select>
-     <div class="seg"><button type="button" data-view="grid" aria-label="Grille" class="${STATE.view === 'grid' ? 'active' : ''}">${SVG.grid}</button><button type="button" data-view="list" aria-label="Liste" class="${STATE.view === 'list' ? 'active' : ''}">${SVG.list}</button></div>
-     <button type="button" class="primary" data-action="add">${SVG.plus}Ajouter un lien</button>`;
+    dropdownHTML('sort', SORT_LABEL[STATE.sort] || "Date d'ajout", Object.entries(SORT_LABEL), STATE.sort) +
+    `<div class="seg"><button type="button" data-view="grid" aria-label="Grille" class="${STATE.view === 'grid' ? 'active' : ''}">${SVG.grid}</button><button type="button" data-view="list" aria-label="Liste" class="${STATE.view === 'list' ? 'active' : ''}">${SVG.list}</button></div>`;
+}
+
+const SORT_LABEL = { date: "Date d'ajout", priority: 'Priorité', account: 'Compte' };
+function dropdownHTML(key, label, options, current){
+  return `<div class="dd" data-dd="${key}">
+    <button type="button" class="dd-btn" data-dd-toggle="${key}" aria-haspopup="true">${escapeHtml(label)}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="dd-menu" role="menu">${options.map(([v, l]) => `<button type="button" role="menuitem" class="${v === current ? 'on' : ''}" data-dd-pick="${key}" data-value="${escapeHtml(v)}">${escapeHtml(l)}${v === current ? SVG.check : ''}</button>`).join('')}</div>
+  </div>`;
+}
+
+function renderPrioNav(){
+  const inLinks = STATE.section === 'links';
+  $('#filterNavLabel').textContent = inLinks ? 'Priorité' : 'Qualité';
+  $('#sideAddBtn').innerHTML = SVG.plus + (inLinks ? 'Ajouter un lien' : 'Ajouter un compte');
+  if(inLinks){
+    const scope = filteredLinks({ ignorePriority: true });
+    $('#prioNav').innerHTML = PRIOS.map(p => {
+      const n = scope.filter(l => (l.priority || 'aucune') === p).length;
+      return `<button type="button" class="nav-item prio-item${STATE.priorityFilter === p ? ' active' : ''}" data-p-filter="${STATE.priorityFilter === p ? 'toutes' : p}"><span class="tag p-${p}">${capitalize(p)}</span><span class="count">${n}</span></button>`;
+    }).join('');
+  } else {
+    $('#prioNav').innerHTML = QUALS.map(q => {
+      const n = STATE.accounts.filter(a => a.quality === q).length;
+      return `<button type="button" class="nav-item prio-item${STATE.accountQualityFilter === q ? ' active' : ''}" data-q-filter="${q}"><span class="tag q-${q}">${QUAL_LABEL[q]}</span><span class="count">${n}</span></button>`;
+    }).join('');
+  }
 }
 
 function renderSubChips(tree){
@@ -1432,6 +1472,7 @@ function render(){
   persistUIState();
   const tree = buildTree();
   renderSidebar(tree);
+  renderPrioNav();
 
   if(STATE.section === 'accounts'){
     const items = filteredAccounts();
@@ -1577,6 +1618,25 @@ document.addEventListener('click', (e) => {
   const t = e.target;
   if(t.closest('.overlay .sheet')) return; // modals handle their own clicks
 
+  const ddPick = t.closest('[data-dd-pick]');
+  if(ddPick){
+    const v = ddPick.dataset.value;
+    if(ddPick.dataset.ddPick === 'sort') STATE.sort = v;
+    else STATE.accountCategoryFilter = v;
+    render();
+    return;
+  }
+  const ddT = t.closest('[data-dd-toggle]');
+  const openDd = $$('.dd.open');
+  if(ddT){
+    const dd = ddT.closest('.dd');
+    const wasOpen = dd.classList.contains('open');
+    openDd.forEach(d => d.classList.remove('open'));
+    if(!wasOpen) dd.classList.add('open');
+    return;
+  }
+  openDd.forEach(d => d.classList.remove('open'));
+
   const act = t.closest('[data-action]');
   if(act){
     const a = act.dataset.action;
@@ -1629,8 +1689,6 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('change', (e) => {
-  if(e.target.id === 'sortSelect'){ STATE.sort = e.target.value; render(); }
-  if(e.target.id === 'accCatSelect'){ STATE.accountCategoryFilter = e.target.value; render(); }
 });
 
 $('#homeReset').onclick = goHome;
@@ -1646,7 +1704,22 @@ function openSettingsSheet(){ openSettings(); syncControls(); }
 $('#settingsBtn').onclick = openSettingsSheet;
 
 /* ---------- Search ---------- */
+// Browsers' password managers like to drop the saved login into the first
+// text field they find. The field stays read-only until it is actually used,
+// and anything the browser slips in on its own is wiped.
+const searchEl = $('#searchInput');
+const unlockSearch = () => searchEl.removeAttribute('readonly');
+searchEl.addEventListener('pointerdown', unlockSearch);
+searchEl.addEventListener('focus', unlockSearch);
+searchEl.addEventListener('touchstart', unlockSearch, { passive: true });
+let userTyped = false;
+searchEl.addEventListener('keydown', () => { userTyped = true; });
+searchEl.addEventListener('paste', () => { userTyped = true; });
+[300, 800, 1600, 3000].forEach(ms => setTimeout(() => {
+  if(!userTyped && searchEl.value !== STATE.search){ searchEl.value = STATE.search; }
+}, ms));
 $('#searchInput').addEventListener('input', (e) => {
+  if(!userTyped && e.target.value && e.target.value.includes('@') && !STATE.search){ e.target.value = ''; return; }
   STATE.search = e.target.value;
   if(STATE.search && STATE.section === 'links' && STATE.mobileView === 'folders' && isMobile()){
     STATE.mobileView = 'links'; STATE.nav = 'all'; STATE.folder = ''; STATE.sub = '';
@@ -1655,7 +1728,7 @@ $('#searchInput').addEventListener('input', (e) => {
 });
 $('#searchClear').onclick = (e) => { e.preventDefault(); STATE.search = ''; render(); $('#searchInput').focus(); };
 document.addEventListener('keydown', (e) => {
-  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); $('#searchInput').focus(); $('#searchInput').select(); }
+  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); unlockSearch(); $('#searchInput').focus(); $('#searchInput').select(); }
   if(e.key === 'Escape'){
     const open = $$('.overlay.show');
     if(open.length){ open.forEach(o => o.classList.remove('show')); return; }

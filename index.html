@@ -58,6 +58,32 @@
   .nav-item.sub{padding-left:32px; font-size:13.5px;}
   .nav-item .chev{width:14px; height:14px; transition:transform .15s ease;}
   .nav-item.open .chev{transform:rotate(90deg);}
+  .nav-item .folder-ico{width:17px; height:17px; flex:none;}
+  .sidebar{width:276px; gap:12px; padding:12px 4px;}
+  .side-block{flex:none; background:var(--panel); border-radius:16px; padding:10px; display:flex; flex-direction:column;}
+  .side-block.tiles{padding:8px; display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .side-block.folders{padding:10px 6px;}
+  .side-title{margin:0; padding:2px 6px 10px; font-size:13px; font-weight:600; color:var(--text);}
+  .side-block.folders .side-title{padding:2px 10px 8px;}
+  .tile{display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:12px; background:var(--fill); color:var(--text); text-align:left;}
+  .tile:hover{background:var(--fill-2);}
+  .tile .top{display:flex; align-items:center; justify-content:space-between; width:100%;}
+  .tile .num{font-size:18px; font-weight:700;}
+  .tile .lbl{font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tile.active{background:var(--ink); color:var(--on-ink);}
+  .ptiles{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .ptile{display:flex; align-items:center; justify-content:space-between; height:40px; padding:0 12px; border-radius:11px; font-size:13px; font-weight:600;}
+  .ptile .n{font-weight:500;}
+  .ptile.active{font-weight:700;}
+  .ptile.active.p-haute{background:var(--haute-on);} .ptile.active.p-moyenne{background:var(--moyenne-on);} .ptile.active.p-faible{background:var(--faible-on);} .ptile.active.p-aucune{background:var(--aucune-on);}
+  .ptile.active.q-high{background:var(--faible-on);} .ptile.active.q-mid{background:var(--moyenne-on);} .ptile.active.q-low{background:var(--haute-on);}
+  .ptile:hover{filter:brightness(.97);}
+  .side-block .nav-item.folder{gap:10px; padding:9px 8px;}
+  .side-block .nav-item.folder .chev{margin-left:0; color:var(--faint);}
+  .side-block .nav-item.folder.open{background:var(--fill); color:var(--text); font-weight:600;}
+  .side-block .nav-item.sub{padding-left:35px;}
+  .side-block .nav-item.sub.active{background:transparent; font-weight:600;}
+  .side-block .nav-item.sub:hover{background:var(--fill);}
   .sidebar-foot{margin-top:auto; display:flex; gap:6px; padding:0 6px;}
   .square-btn{width:40px; height:40px; border-radius:12px; background:var(--fill-2); display:flex; align-items:center; justify-content:center; color:var(--text-2);}
   .square-btn:hover{background:var(--fill-3);}
@@ -372,15 +398,15 @@
       <span class="brand-mark">天</span><span class="brand-name">天才</span>
     </button>
     <button type="button" class="primary side-add" data-action="add" id="sideAddBtn"></button>
-    <nav class="nav-group" id="navShortcuts" aria-label="Raccourcis"></nav>
-    <div class="nav-group">
-      <div class="nav-label" id="filterNavLabel">Priorité</div>
-      <div id="prioNav" class="nav-group"></div>
-    </div>
-    <div class="nav-group">
-      <div class="nav-label">Dossiers</div>
+    <nav class="side-block tiles" id="navShortcuts" aria-label="Raccourcis"></nav>
+    <section class="side-block">
+      <h2 class="side-title" id="filterNavLabel">Priorité</h2>
+      <div id="prioNav" class="ptiles"></div>
+    </section>
+    <section class="side-block folders">
+      <h2 class="side-title">Dossiers</h2>
       <div id="folderNav" class="nav-group"></div>
-    </div>
+    </section>
     <div class="sidebar-foot">
       <button type="button" class="square-btn" id="themeToggleBtn" aria-label="Changer de thème">
         <svg class="ico theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -1026,6 +1052,7 @@ const SVG = {
   star: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
   starFilled: '<svg width="17" height="17" viewBox="0 0 24 24" fill="var(--star-fill)" stroke="var(--star)" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
   link: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>',
+  folder: '<svg class="folder-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
   chevRight: '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
   grid: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
   list: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
@@ -1180,19 +1207,18 @@ function renderSidebar(tree){
   const fav = STATE.links.filter(l => l.fav).length;
   const inbox = STATE.links.filter(l => !(l.categories || []).length).length;
   const inLinks = STATE.section === 'links';
-  const navBtn = (nav, icon, label, count) => {
-    const active = inLinks && !STATE.folder && STATE.nav === nav;
-    return `<button type="button" class="nav-item${active ? ' active' : ''}" data-nav="${nav}">${icon}${label}<span class="count">${count}</span></button>`;
-  };
+  const tile = (attr, active, icon, label, count) =>
+    `<button type="button" class="tile${active ? ' active' : ''}" ${attr}><span class="top">${icon}<span class="num">${count}</span></span><span class="lbl">${label}</span></button>`;
+  const navOn = nav => inLinks && !STATE.folder && STATE.nav === nav;
   $('#navShortcuts').innerHTML =
-    navBtn('all', SVG.all, 'Tous les liens', all) +
-    navBtn('fav', SVG.favNav, 'Favoris', fav) +
-    navBtn('inbox', SVG.inbox, 'À trier', inbox) +
-    `<button type="button" class="nav-item${STATE.section === 'accounts' ? ' active' : ''}" data-section="accounts">${SVG.insta}Comptes suivis<span class="count">${STATE.accounts.length}</span></button>`;
+    tile('data-nav="all"', navOn('all'), SVG.all, 'Tous les liens', all) +
+    tile('data-nav="fav"', navOn('fav'), SVG.favNav, 'Favoris', fav) +
+    tile('data-nav="inbox"', navOn('inbox'), SVG.inbox, 'À trier', inbox) +
+    tile('data-section="accounts"', STATE.section === 'accounts', SVG.insta, 'Comptes suivis', STATE.accounts.length);
 
   $('#folderNav').innerHTML = tree.length ? tree.map(f => {
     const open = inLinks && STATE.folder === f.name;
-    let html = `<button type="button" class="nav-item folder${open ? ' open' : ''}${open && !STATE.sub && !f.subs.length ? ' active' : ''}" data-folder="${escapeHtml(f.name)}" data-sub="">${SVG.chevRight}${escapeHtml(f.name)}<span class="count">${f.count}</span></button>`;
+    let html = `<button type="button" class="nav-item folder${open ? ' open' : ''}${open && !STATE.sub && !f.subs.length ? ' active' : ''}" data-folder="${escapeHtml(f.name)}" data-sub="">${SVG.folder}${escapeHtml(f.name)}<span class="count">${f.count}</span>${SVG.chevRight}</button>`;
     if(open && f.subs.length){
       html += `<button type="button" class="nav-item sub${!STATE.sub ? ' active' : ''}" data-folder="${escapeHtml(f.name)}" data-sub="">Tout ${escapeHtml(f.name)}<span class="count">${f.count}</span></button>`;
       html += f.subs.map(([s, n]) => `<button type="button" class="nav-item sub${STATE.sub === s ? ' active' : ''}" data-folder="${escapeHtml(f.name)}" data-sub="${escapeHtml(s)}">${escapeHtml(s)}<span class="count">${n}</span></button>`).join('');
@@ -1242,12 +1268,12 @@ function renderPrioNav(){
     const scope = filteredLinks({ ignorePriority: true });
     $('#prioNav').innerHTML = PRIOS.map(p => {
       const n = scope.filter(l => (l.priority || 'aucune') === p).length;
-      return `<button type="button" class="nav-item prio-item${STATE.priorityFilter === p ? ' active' : ''}" data-p-filter="${STATE.priorityFilter === p ? 'toutes' : p}"><span class="tag p-${p}">${capitalize(p)}</span><span class="count">${n}</span></button>`;
+      return `<button type="button" class="ptile p-${p}${STATE.priorityFilter === p ? ' active' : ''}" data-p-filter="${STATE.priorityFilter === p ? 'toutes' : p}">${capitalize(p)}<span class="n">${n}</span></button>`;
     }).join('');
   } else {
     $('#prioNav').innerHTML = QUALS.map(q => {
       const n = STATE.accounts.filter(a => a.quality === q).length;
-      return `<button type="button" class="nav-item prio-item${STATE.accountQualityFilter === q ? ' active' : ''}" data-q-filter="${q}"><span class="tag q-${q}">${QUAL_LABEL[q]}</span><span class="count">${n}</span></button>`;
+      return `<button type="button" class="ptile q-${q}${STATE.accountQualityFilter === q ? ' active' : ''}" data-q-filter="${q}">${QUAL_LABEL[q]}<span class="n">${n}</span></button>`;
     }).join('');
   }
 }

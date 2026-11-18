@@ -137,9 +137,9 @@
   .card-acct{flex:1; min-width:0; text-align:left; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .card-acct:hover{text-decoration:underline;}
   .mini-btn{width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--text-2);}
-  .mini-btn.edit{background:var(--fill-2);}
+  .mini-btn.edit, .mini-btn.fav-btn{background:var(--fill-2);}
   .mini-btn:hover{background:var(--fill-3);}
-  .fav-btn{color:var(--faint);}
+  .fav-btn{color:var(--dim);}
   .fav-btn.on{color:var(--star);}
   .fav-btn.on svg{fill:var(--star-fill);}
   .embed-wrap{margin:0 8px; border-radius:12px; overflow:hidden; background:var(--embed-bg); min-height:120px; display:flex; align-items:center; justify-content:center;}
@@ -209,7 +209,11 @@
   .shortcut{display:flex; align-items:center; gap:10px; height:52px; padding:0 14px; border-radius:16px; background:var(--fill); font-size:14.5px; font-weight:600; color:var(--text-2); text-align:left;}
   .shortcut.fav{background:var(--moyenne-bg); color:var(--moyenne-fg);}
   .shortcut .count{margin-left:auto; font-size:13px; font-weight:500;}
-  .folder-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px 12px;}
+  .tag-cloud{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .tag-cloud button{padding:9px 15px; border-radius:999px; background:var(--fill); color:var(--text-2); line-height:1.15; display:inline-flex; align-items:baseline; gap:6px;}
+  .tag-cloud button.folder{background:var(--ink); color:var(--on-ink); font-weight:600;}
+  .tag-cloud button .n{font-size:12px; opacity:.6; font-weight:400;}
+  .folder-grid{display:block;}
   .folder-tile{display:flex; flex-direction:column; gap:6px; text-align:left;}
   .cover{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:3px; border-radius:16px; overflow:hidden; aspect-ratio:1/1; width:100%;}
   .cover span{display:block;}
@@ -236,6 +240,7 @@
   .danger{height:44px; padding:0 16px; border-radius:12px; font-size:14px; color:var(--haute-fg); background:var(--haute-bg);}
   .big-primary{height:44px; padding:0 22px; border-radius:12px; background:var(--ink); color:var(--on-ink); font-size:14px; font-weight:600;}
   .soft-btn{height:38px; padding:0 12px; border-radius:11px; background:var(--fill); display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--text-2);}
+  .soft-btn.star-only{width:38px; padding:0; justify-content:center; margin-left:auto;}
   .soft-btn.on{color:var(--moyenne-fg); background:var(--moyenne-bg);}
   .soft-btn.on svg{fill:var(--star-fill); stroke:var(--star);}
   .icon-round{width:38px; height:38px; border-radius:11px; background:var(--fill); display:flex; align-items:center; justify-content:center; color:var(--text-2);}
@@ -440,11 +445,11 @@
 </div>
 
 <nav class="bottom-nav" id="bottomNav" aria-label="Navigation">
-  <button type="button" data-mnav="folders">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossiers
-  </button>
   <button type="button" data-mnav="all">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Tout
+  </button>
+  <button type="button" data-mnav="folders">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Tags
   </button>
   <button type="button" class="add" data-mnav="add" aria-label="Ajouter">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -463,9 +468,8 @@
     <div class="grabber"><span></span></div>
     <div class="sheet-head">
       <h2 id="linkModalTitle">Ajouter un lien</h2>
-      <button type="button" class="soft-btn" id="favToggle" aria-pressed="false">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--star)" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
-        Favori
+      <button type="button" class="soft-btn star-only" id="favToggle" aria-pressed="false" aria-label="Favori">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--star)" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
       </button>
       <button type="button" class="icon-round" id="closeLinkBtn" aria-label="Fermer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -621,7 +625,7 @@ let STATE = {
   nav: 'all',              // 'all' | 'fav' | 'inbox'
   folder: '',
   sub: '',
-  mobileView: 'folders',   // mobile only: 'folders' | 'links'
+  mobileView: 'links',   // mobile only: 'folders' (tag cloud) | 'links'
   view: 'grid',
   sort: 'date',
   priorityFilter: 'toutes',
@@ -794,11 +798,13 @@ $('#refreshBtn').onclick = () => loadFromGitHub();
 /* ---------- Platform detection & embeds ---------- */
 function detectPlatform(url){
   try{
-    const h = new URL(url).hostname.replace('www.','');
-    if(h.includes('instagram.com')) return 'instagram';
-    if(h.includes('x.com') || h.includes('twitter.com')) return 'twitter';
-    if(h.includes('tiktok.com')) return 'tiktok';
-    if(h.includes('threads.net') || h.includes('threads.com')) return 'threads';
+    const h = new URL(url).hostname.toLowerCase();
+    // Match the domain itself or a sub-domain: "dropbox.com" must not count as x.com.
+    const on = (...domains) => domains.some(d => h === d || h.endsWith('.' + d));
+    if(on('instagram.com')) return 'instagram';
+    if(on('x.com', 'twitter.com')) return 'twitter';
+    if(on('tiktok.com')) return 'tiktok';
+    if(on('threads.net', 'threads.com')) return 'threads';
     return 'other';
   } catch(e){ return 'other'; }
 }
@@ -1252,7 +1258,8 @@ function renderSubChips(tree){
       allAccountCategories().map(c => `<button type="button" class="${STATE.accountCategoryFilter === c ? 'active' : ''}" data-acc-cat="${escapeHtml(STATE.accountCategoryFilter === c ? '' : c)}">${escapeHtml(c)}</button>`).join('');
     return;
   }
-  if(STATE.folder){
+  box.innerHTML = '';
+  if(false){
     const node = tree.find(f => f.name === STATE.folder);
     const subs = node ? node.subs : [];
     box.innerHTML = subs.length
@@ -1261,15 +1268,14 @@ function renderSubChips(tree){
       : '';
     return;
   }
-  box.innerHTML = tree.map(f => `<button type="button" data-folder="${escapeHtml(f.name)}" data-sub="">${escapeHtml(f.name)}</button>`).join('');
 }
 
 function renderMobileHead(count){
   const foldersHome = STATE.section === 'links' && STATE.mobileView === 'folders';
   const t = currentTitle();
-  $('#mTitle').textContent = foldersHome ? 'Dossiers' : t.title;
-  $('#mCount').textContent = foldersHome ? STATE.links.length : count;
-  $('#mBackBtn').style.display = foldersHome ? 'none' : 'flex';
+  $('#mTitle').textContent = foldersHome ? 'Tags' : t.title;
+  $('#mCount').textContent = foldersHome ? '' : count;
+  $('#mBackBtn').style.display = (!foldersHome && STATE.section === 'links' && (STATE.folder || STATE.nav !== 'all')) ? 'flex' : 'none';
   $('#mFilterBtn').style.display = (STATE.section === 'links' && !foldersHome) ? 'flex' : 'none';
   $('#mFilterBtn').classList.toggle('dot', STATE.priorityFilter !== 'toutes' || STATE.sort !== 'date' || STATE.nav === 'fav');
   $('#searchInput').placeholder = STATE.section === 'accounts' ? 'Rechercher un compte…'
@@ -1289,15 +1295,12 @@ function renderFoldersHome(tree){
   $('#mShortcuts').innerHTML =
     `<button type="button" class="shortcut fav" data-open-nav="fav">${SVG.starFilled}Favoris<span class="count">${fav}</span></button>` +
     `<button type="button" class="shortcut" data-open-nav="inbox">${SVG.inbox}À trier<span class="count">${inbox}</span></button>`;
-  $('#folderGrid').innerHTML = tree.length ? tree.map(f => {
-    const t = tonesFor(f.name);
-    const meta = f.subs.length ? `${f.subs.length} sous-catégorie${f.subs.length > 1 ? 's' : ''}` : 'Pas de sous-catégorie';
-    return `<button type="button" class="folder-tile" data-open-folder="${escapeHtml(f.name)}">
-      <span class="cover"><span style="background:${t[0]}"></span><span style="background:${t[1]}"></span><span style="background:${t[2]}"></span><span style="background:${t[3]}"></span></span>
-      <span class="name">${escapeHtml(f.name)} <span style="font-size:13px;font-weight:400;color:var(--dim)">${f.count}</span></span>
-      <span class="meta">${meta}</span>
-    </button>`;
-  }).join('') : `<div class="empty" style="grid-column:1/-1">Ajoutez un lien avec un dossier pour commencer.</div>`;
+  const max = Math.max(1, ...tree.map(f => f.count));
+  const size = n => (14 + 8 * Math.sqrt(n / max)).toFixed(1);
+  $('#folderGrid').innerHTML = tree.length ? `<div class="tag-cloud">${tree.map(f =>
+    `<button type="button" class="folder" style="font-size:${size(f.count)}px" data-folder="${escapeHtml(f.name)}" data-sub="">${escapeHtml(f.name)}<span class="n">${f.count}</span></button>` +
+    f.subs.map(([sname, n]) => `<button type="button" style="font-size:${size(n)}px" data-folder="${escapeHtml(f.name)}" data-sub="${escapeHtml(sname)}">${escapeHtml(sname)}<span class="n">${n}</span></button>`).join('')
+  ).join('')}</div>` : `<div class="empty">Ajoutez un lien avec une catégorie pour commencer.</div>`;
 }
 
 /* ---------- Cards (grid) ---------- */
@@ -1451,8 +1454,8 @@ function syncControls(){
   document.body.classList.toggle('m-folders', foldersHome);
   $$('#bottomNav [data-mnav]').forEach(b => {
     const m = b.dataset.mnav;
-    const active = (m === 'folders' && STATE.section === 'links' && (STATE.mobileView === 'folders' || STATE.folder)) ||
-      (m === 'all' && STATE.section === 'links' && STATE.mobileView === 'links' && !STATE.folder) ||
+    const active = (m === 'folders' && STATE.section === 'links' && (STATE.mobileView === 'folders' || STATE.folder || STATE.nav !== 'all')) ||
+      (m === 'all' && STATE.section === 'links' && STATE.mobileView === 'links' && !STATE.folder && STATE.nav === 'all') ||
       (m === 'accounts' && STATE.section === 'accounts');
     b.classList.toggle('active', active);
   });
@@ -1527,7 +1530,7 @@ function persistUIState(){
 function restoreUIState(){
   try{
     const s = JSON.parse(localStorage.getItem('vault_ui_state_v2') || '{}');
-    ['view','sort','priorityFilter','nav','folder','sub','section','mobileView','accountCategoryFilter','accountQualityFilter']
+    ['view','sort','accountCategoryFilter','accountQualityFilter']
       .forEach(k => { if(typeof s[k] === 'string') STATE[k] = s[k]; });
     if(!s.view){
       const old = JSON.parse(localStorage.getItem('vault_ui_state') || '{}');
@@ -1565,10 +1568,15 @@ function goHome(){
   STATE.sub = '';
   STATE.accountFilter = '';
   STATE.priorityFilter = 'toutes';
-  STATE.mobileView = 'folders';
+  STATE.mobileView = 'links';
   STATE.search = '';
   render();
   window.scrollTo({ top: 0 });
+}
+function goTags(){
+  goHome();
+  STATE.mobileView = 'folders';
+  render();
 }
 function goAccounts(){
   STATE.section = 'accounts';
@@ -1675,7 +1683,7 @@ document.addEventListener('click', (e) => {
   const mn = t.closest('[data-mnav]');
   if(mn){
     const m = mn.dataset.mnav;
-    if(m === 'folders') goHome();
+    if(m === 'folders') goTags();
     else if(m === 'all') goNav('all');
     else if(m === 'add') openAdd();
     else if(m === 'accounts') goAccounts();
@@ -1693,9 +1701,7 @@ document.addEventListener('change', (e) => {
 
 $('#homeReset').onclick = goHome;
 $('#mBackBtn').onclick = () => {
-  if(STATE.section === 'accounts'){ goHome(); return; }
-  if(STATE.folder && STATE.sub){ goFolder(STATE.folder, ''); return; }
-  goHome();
+  goTags();
 };
 $('#themeToggleBtn').onclick = toggleTheme;
 $('#themeRow').onclick = toggleTheme;

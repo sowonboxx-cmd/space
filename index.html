@@ -291,6 +291,11 @@
   .preview-box blockquote.instagram-media{background:var(--card) !important;}
   .preview-box blockquote.instagram-media a{font-size:0 !important; color:transparent !important;}
   .preview-box .self-hosted-video{width:100%; height:100%; object-fit:contain; background:#000;}
+  .stats-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .card-stats{display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:0 6px; font-size:13px; color:var(--text-2);}
+  .card-stats strong{font-weight:700; color:var(--text);}
+  .card-stats svg{color:#E0245E; flex:none;}
+  .card-stats .sep{color:var(--faint);}
   .url-row{display:flex; gap:8px;}
   .url-row .input{flex:1; min-width:0;}
   .detected{font-size:12.5px; color:var(--faible-fg); display:flex; align-items:center; gap:6px; min-height:16px;}
@@ -374,7 +379,7 @@
     .chip{font-size:13px; padding:5px 11px;}
     body.m-folders .folders-home{display:block;}
     body.m-folders #linksArea, body.m-folders .sub-chips{display:none !important;}
-    .bottom-nav{display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); align-items:center; position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); height:66px; background:#18181B; border-radius:22px; padding:0 6px; z-index:50;}
+    .bottom-nav{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); align-items:center; position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); height:66px; background:#18181B; border-radius:22px; padding:0 6px; z-index:50;}
     html.dark .bottom-nav{background:#2A2A2F;}
     .bottom-nav button{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; color:#B4B4BC; height:100%; justify-content:center;}
     .bottom-nav button.active{color:#FFFFFF; font-weight:600;}
@@ -496,9 +501,6 @@
   <button type="button" data-mnav="folders">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Tags
   </button>
-  <button type="button" class="add" data-mnav="add" aria-label="Ajouter">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-  </button>
   <button type="button" data-mnav="accounts">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg>Comptes
   </button>
@@ -555,6 +557,10 @@
           <span class="field-label">Note</span>
           <textarea class="textarea" id="linkNote" rows="2" placeholder="Pourquoi vous le gardez, idée à réutiliser…"></textarea>
         </label>
+        <div class="stats-row">
+          <label class="field"><span class="field-label">Likes</span><input type="text" inputmode="numeric" class="input" id="linkLikes" placeholder="12 400" autocomplete="off"></label>
+          <label class="field"><span class="field-label">Date du post</span><input type="date" class="input" id="linkPostedAt"></label>
+        </div>
         <div class="field">
           <button type="button" class="collapse-btn" id="promptHeader" aria-expanded="false">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
@@ -1191,6 +1197,8 @@ function filteredLinks(opts){
   const dateKey = l => (l.sortOrder ?? new Date(l.addedAt).getTime());
   if(STATE.sort === 'priority'){
     items.sort((a, b) => (PRIO_RANK[a.priority] ?? 9) - (PRIO_RANK[b.priority] ?? 9) || dateKey(b) - dateKey(a));
+  } else if(STATE.sort === 'likes'){
+    items.sort((a, b) => (Number.isFinite(b.likes) ? b.likes : -1) - (Number.isFinite(a.likes) ? a.likes : -1) || dateKey(b) - dateKey(a));
   } else if(STATE.sort === 'account'){
     items.sort((a, b) => displayAccount(a).localeCompare(displayAccount(b), 'fr') || dateKey(b) - dateKey(a));
   } else {
@@ -1287,7 +1295,7 @@ function renderToolbar(count){
     `<div class="seg"><button type="button" data-view="grid" aria-label="Grille" class="${STATE.view === 'grid' ? 'active' : ''}">${SVG.grid}</button><button type="button" data-view="list" aria-label="Liste" class="${STATE.view === 'list' ? 'active' : ''}">${SVG.list}</button></div>`;
 }
 
-const SORT_LABEL = { date: "Date d'ajout", priority: 'Priorité', account: 'Compte' };
+const SORT_LABEL = { date: "Date d'ajout", likes: 'Likes', priority: 'Priorité', account: 'Compte' };
 function dropdownHTML(key, label, options, current){
   return `<div class="dd" data-dd="${key}">
     <button type="button" class="dd-btn" data-dd-toggle="${key}" aria-haspopup="true">${escapeHtml(label)}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -1298,7 +1306,8 @@ function dropdownHTML(key, label, options, current){
 function renderPrioNav(){
   const inLinks = STATE.section === 'links';
   $('#filterNavLabel').textContent = inLinks ? 'Priorité' : 'Qualité';
-  $('#sideAddBtn').innerHTML = SVG.plus + (inLinks ? 'Ajouter un lien' : 'Ajouter un compte');
+  $('#sideAddBtn').innerHTML = SVG.plus + 'Ajouter un compte';
+  $('#sideAddBtn').style.display = inLinks ? 'none' : '';
   if(inLinks){
     const scope = filteredLinks({ ignorePriority: true });
     $('#prioNav').innerHTML = PRIOS.map(p => {
@@ -1379,8 +1388,19 @@ function chipsHTML(l){
   return `<button type="button" class="chip prio p-${l.priority || 'aucune'}" data-prio-filter="${l.priority || 'aucune'}">${capitalize(l.priority || 'aucune')}</button>` +
     linkChips(l).map(p => `<button type="button" class="chip" data-folder="${escapeHtml(p.folder)}" data-sub="${escapeHtml(p.sub)}">${escapeHtml(p.sub || p.folder)}</button>`).join('');
 }
+const fmtInt = n => Number(n).toLocaleString('fr-FR');
+const fmtDay = iso => { try{ return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }); }catch(e){ return ''; } };
+function statsHTML(l){
+  const hasLikes = Number.isFinite(l.likes);
+  if(!hasLikes && !l.postedAt) return '';
+  const heart = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.8-9.6A5.4 5.4 0 0 1 12 5.6a5.4 5.4 0 0 1 9.8 5.8C19.5 16.3 12 21 12 21z"/></svg>';
+  const parts = [];
+  if(hasLikes) parts.push(`<span title="${l.likesAt ? 'Relevé le ' + fmtDay(l.likesAt) : ''}">${heart} <strong>${fmtInt(l.likes)}</strong> likes</span>`);
+  if(l.postedAt) parts.push(`<span>posté le ${fmtDay(l.postedAt)}</span>`);
+  return `<div class="card-stats">${parts.join('<span class="sep">·</span>')}</div>`;
+}
 function cardMetaHTML(l){
-  return `<div class="chips">${chipsHTML(l)}</div>` +
+  return `<div class="chips">${chipsHTML(l)}</div>` + statsHTML(l) +
     (l.note ? `<p class="card-note">${escapeHtml(l.note)}</p>` : '') +
     (l.source ? `<a class="source-link" href="${escapeHtml(l.source)}" target="_blank" rel="noopener">${SVG.link}Source d'origine</a>` : '');
 }
@@ -2005,6 +2025,8 @@ function resetLinkModal(){
   $('#linkUrl').value = '';
   $('#linkSource').value = '';
   $('#linkNote').value = '';
+  $('#linkLikes').value = '';
+  $('#linkPostedAt').value = '';
   $('#linkPrompt').value = '';
   $('#promptBody').classList.remove('show');
   $('#promptHeader').classList.remove('open');
@@ -2027,6 +2049,8 @@ function openEditModal(id){
   $('#linkUrl').value = l.url;
   $('#linkSource').value = l.source || '';
   $('#linkNote').value = l.note || '';
+  $('#linkLikes').value = Number.isFinite(l.likes) ? fmtInt(l.likes) : '';
+  $('#linkPostedAt').value = l.postedAt ? String(l.postedAt).slice(0, 10) : '';
   $('#linkPrompt').value = l.prompt || '';
   const parts = (l.categories || []).map(catParts).filter(p => p.folder);
   STATE.modalFolders = Array.from(new Set(parts.map(p => p.folder)));
@@ -2058,6 +2082,13 @@ $('#saveLinkBtn').onclick = () => {
     source: platform === 'other' ? $('#linkSource').value.trim() : '',
     fav: STATE.modalFav
   };
+  const likesRaw = $('#linkLikes').value.replace(/[^0-9]/g, '');
+  const prev = STATE.editingId ? (STATE.links.find(x => x.id === STATE.editingId) || {}) : {};
+  if(likesRaw){
+    data.likes = parseInt(likesRaw, 10);
+    data.likesAt = (prev.likes === data.likes && prev.likesAt) ? prev.likesAt : new Date().toISOString();
+  } else { data.likes = undefined; data.likesAt = undefined; }
+  data.postedAt = $('#linkPostedAt').value || undefined;
   if(STATE.editingId){
     const l = STATE.links.find(x => x.id === STATE.editingId);
     if(l) Object.assign(l, data);
@@ -2177,7 +2208,7 @@ function renderFilterSheet(){
     </div>
     <div class="field">
       <span class="field-label">Trier et afficher</span>
-      <div class="seg-wide">${[['date', "Date d'ajout"], ['priority', 'Priorité'], ['account', 'Compte']].map(([v, l]) => `<button type="button" class="${STATE.sort === v ? 'active' : ''}" data-f-sort="${v}">${l}</button>`).join('')}</div>
+      <div class="seg-wide">${[['date', "Date d'ajout"], ['likes', 'Likes'], ['priority', 'Priorité']].map(([v, l]) => `<button type="button" class="${STATE.sort === v ? 'active' : ''}" data-f-sort="${v}">${l}</button>`).join('')}</div>
       <div class="seg-wide">${[['grid', 'Grille'], ['list', 'Liste']].map(([v, l]) => `<button type="button" class="${STATE.view === v ? 'active' : ''}" data-f-view="${v}">${l}</button>`).join('')}</div>
     </div>
     ${node && node.subs.length ? `<div class="field">

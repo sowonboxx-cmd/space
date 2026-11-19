@@ -636,11 +636,11 @@
       </button>
     </div>
     <div class="sheet-body col">
-      <label class="field"><span class="field-label">Token GitHub</span><input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><input type="password" class="input" id="ghToken" placeholder="ghp_…" autocomplete="new-password"></label>
-      <label class="field"><span class="field-label">Propriétaire / dépôt</span><input type="text" class="input" id="ghRepo" placeholder="utilisateur/depot" autocomplete="off"></label>
-      <label class="field"><span class="field-label">Chemin du fichier</span><input type="text" class="input" id="ghPath" placeholder="data/links.json" autocomplete="off"></label>
-      <label class="field"><span class="field-label">Branche</span><input type="text" class="input" id="ghBranch" placeholder="main" autocomplete="off"></label>
-      <label class="field"><span class="field-label">URL du Worker (aperçus TikTok, X, Threads)</span><input type="text" class="input" id="workerUrl" placeholder="https://….workers.dev" autocomplete="off"></label>
+      <label class="field"><span class="field-label">Token GitHub</span><input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><input type="password" class="input" id="ghToken" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_…" autocomplete="new-password"></label>
+      <label class="field"><span class="field-label">Propriétaire / dépôt</span><input type="text" class="input" id="ghRepo" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="utilisateur/depot" autocomplete="off"></label>
+      <label class="field"><span class="field-label">Chemin du fichier</span><input type="text" class="input" id="ghPath" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="data/links.json" autocomplete="off"></label>
+      <label class="field"><span class="field-label">Branche</span><input type="text" class="input" id="ghBranch" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="main" autocomplete="off"></label>
+      <label class="field"><span class="field-label">URL du Worker (aperçus TikTok, X, Threads)</span><input type="text" class="input" id="workerUrl" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://….workers.dev" autocomplete="off"></label>
       <div class="sync-note" id="syncStatus"></div>
       <button type="button" class="toggle-row" id="themeRow">Thème sombre<span class="switch"></span></button>
     </div>
@@ -704,9 +704,13 @@ function toast(msg){
 }
 
 /* ---------- Settings (localStorage) ---------- */
+const DEFAULT_SETTINGS = { repo: 'sowonboxx-cmd/space', path: 'data/links.json', branch: 'main', workerUrl: 'https://space.sowonboxx.workers.dev' };
 function getSettings(){
-  try { return JSON.parse(localStorage.getItem('vault_gh_settings') || '{}'); }
-  catch(e){ return {}; }
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem('vault_gh_settings') || '{}') || {}; }
+  catch(e){ s = {}; }
+  Object.keys(DEFAULT_SETTINGS).forEach(k => { if(!s[k]) s[k] = DEFAULT_SETTINGS[k]; });
+  return s;
 }
 function setSettings(s){ localStorage.setItem('vault_gh_settings', JSON.stringify(s)); }
 
@@ -726,8 +730,9 @@ $('#settingsBtn').onclick = openSettings;
 $('#closeSettingsBtn').onclick = closeSettings;
 $('#saveSettingsBtn').onclick = function(){
   const s = getSettings();
-  s.token = $('#ghToken').value.trim();
-  s.repo = $('#ghRepo').value.trim();
+  // Typed on a phone, a token easily picks up a space or a line break.
+  s.token = $('#ghToken').value.replace(/\s+/g, '');
+  s.repo = $('#ghRepo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/, '').replace(/\/+$/, '');
   s.path = $('#ghPath').value.trim() || 'data/links.json';
   s.branch = $('#ghBranch').value.trim() || 'main';
   s.workerUrl = $('#workerUrl').value.trim().replace(/\/$/, '');
@@ -761,8 +766,16 @@ async function loadFromGitHub(){
   try{
     const headers = {'Accept':'application/vnd.github+json'};
     if(s.token) headers['Authorization'] = 'Bearer ' + s.token;
-    const res = await fetch(url + (s.branch ? `?ref=${s.branch}` : ''), {headers});
+    const target = url + (s.branch ? `?ref=${encodeURIComponent(s.branch)}` : '');
+    let res = await fetch(target, {headers});
+    if((res.status === 401 || res.status === 403) && s.token){
+      // The token is refused, but the repo is public: still show the data,
+      // and say clearly that saving won't work until the token is fixed.
+      toast('Token GitHub refusé : vérifiez-le dans les réglages. Lecture seule en attendant.');
+      res = await fetch(target, {headers: {'Accept':'application/vnd.github+json'}});
+    }
     if(res.status === 404){
+      if(!STATE.links.length) toast('Fichier introuvable sur GitHub : vérifiez le dépôt, le chemin et la branche');
       // Nothing on GitHub yet — that's fine, it just means the next save()
       // will create the file. Never wipe local state here: it may well have
       // been mutated (a link/account just added) while this request was
@@ -787,7 +800,9 @@ async function loadFromGitHub(){
     if(changed) render(); // only re-render (and re-trigger embeds) if something actually changed
   } catch(err){
     console.error(err);
-    toast('Sync impossible, affichage de la copie locale');
+    const why = /GitHub (\d+)/.exec(err && err.message || '');
+    toast(why ? `Sync impossible (erreur GitHub ${why[1]}), affichage de la copie locale`
+              : 'Sync impossible : pas de connexion à GitHub, affichage de la copie locale');
   }
 }
 
@@ -796,7 +811,7 @@ async function saveToGitHub(){
   const url = ghApiUrl();
   saveLocalCache();
   if(!url || !s.token){
-    toast('Enregistré localement (configure GitHub dans Réglages pour synchroniser)');
+    toast('Enregistré sur cet appareil : ajoutez votre token GitHub dans les réglages pour synchroniser');
     return;
   }
   try{

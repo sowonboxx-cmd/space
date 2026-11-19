@@ -163,7 +163,8 @@
   .card-acct{flex:1; min-width:0; text-align:left; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .card-acct:hover{text-decoration:underline;}
   .mini-btn{width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--text-2);}
-  .mini-btn.edit, .mini-btn.fav-btn{background:var(--card-btn);}
+  .mini-btn.edit, .mini-btn.fav-btn, .mini-btn.copy-btn{background:var(--card-btn);}
+  .copy-btn.done{color:#1F9D55;}
   .mini-btn:hover{background:var(--card-btn-2);}
   .fav-btn{color:var(--dim);}
   .fav-btn.on{color:var(--star);}
@@ -700,6 +701,24 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 function uid(){ return 'l_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+/* Copy the post's link (Instagram reel, etc.) so it can go straight into Cobalt. */
+function copyLink(id, btn){
+  const l = STATE.links.find(x => x.id === id);
+  const url = l && (isDirectVideoUrl(l.url) ? (l.source || l.url) : l.url);
+  if(!url) return;
+  const done = () => { toast('Lien copié'); btn.classList.add('done'); setTimeout(() => btn.classList.remove('done'), 1200); };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url) && done());
+  } else if(fallbackCopy(url)) done();
+}
+function fallbackCopy(text){
+  const t = document.createElement('textarea');
+  t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+  document.body.appendChild(t); t.select();
+  let ok = false; try{ ok = document.execCommand('copy'); }catch(e){}
+  t.remove(); return ok;
+}
 
 function toast(msg){
   const t = $('#toast');
@@ -1381,6 +1400,7 @@ function cardHeadHTML(l){
   return (l.account
       ? `<button type="button" class="card-acct" data-acct="${escapeHtml(l.account)}">${acct}</button>`
       : `<span class="card-acct">${acct}</span>`) +
+    `<button type="button" class="mini-btn copy-btn" data-action="copy" data-id="${l.id}" aria-label="Copier le lien" title="Copier le lien">${SVG.link}</button>` +
     `<button type="button" class="mini-btn fav-btn${l.fav ? ' on' : ''}" data-action="fav" data-id="${l.id}" aria-label="Favori" aria-pressed="${l.fav ? 'true' : 'false'}">${SVG.star}</button>` +
     `<button type="button" class="mini-btn edit" data-action="edit" data-id="${l.id}" aria-label="Modifier">${SVG.pencil}</button>`;
 }
@@ -1733,6 +1753,7 @@ document.addEventListener('click', (e) => {
     const a = act.dataset.action;
     if(a === 'edit'){ openEditModal(act.dataset.id); return; }
     if(a === 'fav'){ toggleFav(act.dataset.id); return; }
+    if(a === 'copy'){ copyLink(act.dataset.id, act); return; }
     if(a === 'add'){ openAdd(); return; }
     if(a === 'rename'){ renameCurrent(); return; }
   }

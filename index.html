@@ -155,7 +155,7 @@
 
   /* ---------- Cards ---------- */
   .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px;}
-  .card{background:var(--card); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; contain:layout paint;}
+  .card{background:var(--card); border-radius:18px; overflow:hidden; display:flex; flex-direction:column;}
   .card.dragging{opacity:.4;}
   .card.drag-over{box-shadow:0 0 0 2px var(--ink);}
   .card-head{display:flex; align-items:center; gap:4px; padding:8px 8px 8px 14px; cursor:grab;}
@@ -2191,7 +2191,14 @@ $('#clearFiltersBtn').onclick = () => {
 $('#applyFiltersBtn').onclick = () => closeOverlay('#filterOverlay');
 
 /* ---------- Init ---------- */
-window.matchMedia('(max-width: 760px)').addEventListener('change', () => { lastGridOrder = []; render(); });
+// Crossing the phone/desktop width only changes the layout, which CSS
+// handles: the cards (and any video playing in them) are kept as they are.
+// Going full screen on a video also changes the width, so nothing is
+// re-rendered while something is full screen.
+window.matchMedia('(max-width: 760px)').addEventListener('change', () => {
+  if(document.fullscreenElement || document.webkitFullscreenElement) return;
+  syncControls();
+});
 STATE.search = '';
 $('#searchInput').value = '';
 restoreUIState();

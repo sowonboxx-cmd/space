@@ -8727,7 +8727,9 @@
       "addedAt": "2026-11-19T13:32:49.215Z",
       "url": "https://www.instagram.com/reel/Df1--ijK8LM/?fqnt=MXJ2aGdtaXd2ZmRncA==",
       "platform": "instagram",
-      "categories": [],
+      "categories": [
+        "Food - Viral ads"
+      ],
       "priority": "moyenne",
       "note": "",
       "prompt": "",

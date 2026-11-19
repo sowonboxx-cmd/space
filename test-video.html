@@ -6,24 +6,53 @@
 <title>Test vidéo Instagram</title>
 <style>
   body{margin:0; padding:16px; font-family:-apple-system, system-ui, sans-serif; background:#fff; color:#18181B;}
-  h2{font-size:17px; margin:28px 0 10px;}
+  h1{font-size:20px; margin:0 0 6px;}
+  h2{font-size:17px; margin:34px 0 10px;}
   p{font-size:14px; color:#52525B; margin:0 0 10px;}
+  .tag{font-weight:600; color:#18181B; margin:14px 0 6px;}
   .rounded{border-radius:12px; overflow:hidden; background:#F1F1F2; padding:8px;}
   .rounded iframe{border-radius:12px !important; width:100% !important; min-width:0 !important;}
 </style>
 </head>
 <body>
-  <h1 style="font-size:20px">Test vidéo Instagram</h1>
-  <p>Appuyez sur play dans chaque cadre et notez lesquels lisent la vidéo jusqu'au bout.</p>
+  <h1>Test vidéo Instagram</h1>
+  <p>Vos 5 derniers posts Instagram, chacun en deux versions. Certains renvoient forcément vers Instagram (musique protégée) : ignorez-les. Pour les autres, appuyez sur play dans A puis dans B.</p>
 
-  <h2>Test A · post Instagram brut, sans aucun style</h2>
-  <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DagRW4oSs89/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/DagRW4oSs89/">Voir sur Instagram</a></blockquote>
-
-  <h2>Test B · le même, dans un cadre arrondi comme sur 天才</h2>
-  <div class="rounded">
-    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DagRW4oSs89/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/DagRW4oSs89/">Voir sur Instagram</a></blockquote>
-  </div>
-
+  <section>
+    <h2>Post 1</h2>
+    <div class="pair">
+      <div><p class="tag">A · brut</p><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/Df1--ijK8LM/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/Df1--ijK8LM/">Voir sur Instagram</a></blockquote></div>
+      <div><p class="tag">B · cadre arrondi</p><div class="rounded"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/Df1--ijK8LM/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/Df1--ijK8LM/">Voir sur Instagram</a></blockquote></div></div>
+    </div>
+  </section>
+  <section>
+    <h2>Post 2</h2>
+    <div class="pair">
+      <div><p class="tag">A · brut</p><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DfkX0XfyJ52/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/DfkX0XfyJ52/">Voir sur Instagram</a></blockquote></div>
+      <div><p class="tag">B · cadre arrondi</p><div class="rounded"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DfkX0XfyJ52/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/DfkX0XfyJ52/">Voir sur Instagram</a></blockquote></div></div>
+    </div>
+  </section>
+  <section>
+    <h2>Post 3</h2>
+    <div class="pair">
+      <div><p class="tag">A · brut</p><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/De_M1Gnt9ex/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/De_M1Gnt9ex/">Voir sur Instagram</a></blockquote></div>
+      <div><p class="tag">B · cadre arrondi</p><div class="rounded"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/De_M1Gnt9ex/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/De_M1Gnt9ex/">Voir sur Instagram</a></blockquote></div></div>
+    </div>
+  </section>
+  <section>
+    <h2>Post 4</h2>
+    <div class="pair">
+      <div><p class="tag">A · brut</p><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/De7XoMYorJm/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/De7XoMYorJm/">Voir sur Instagram</a></blockquote></div>
+      <div><p class="tag">B · cadre arrondi</p><div class="rounded"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/De7XoMYorJm/" style="margin:0;width:100%;"><a href="https://www.instagram.com/reel/De7XoMYorJm/">Voir sur Instagram</a></blockquote></div></div>
+    </div>
+  </section>
+  <section>
+    <h2>Post 5</h2>
+    <div class="pair">
+      <div><p class="tag">A · brut</p><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/Dcx2oyksEtY/" style="margin:0;width:100%;"><a href="https://www.instagram.com/p/Dcx2oyksEtY/">Voir sur Instagram</a></blockquote></div>
+      <div><p class="tag">B · cadre arrondi</p><div class="rounded"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/Dcx2oyksEtY/" style="margin:0;width:100%;"><a href="https://www.instagram.com/p/Dcx2oyksEtY/">Voir sur Instagram</a></blockquote></div></div>
+    </div>
+  </section>
   <script async src="https://www.instagram.com/embed.js"></script>
 </body>
 </html>
